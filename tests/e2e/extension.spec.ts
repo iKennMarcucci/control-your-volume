@@ -174,3 +174,45 @@ test('restricted pages show why they cannot be controlled', async () => {
   await expect(row).toHaveAttribute('data-state', 'restricted');
   await expect(row.locator('.go-btn')).toBeHidden();
 });
+
+test('mute silences a tab whose volume was changed', async () => {
+  const a = await openTone(h, 'Tone A');
+  await markInvoked(h, [a.tabId]);
+  const popup = await openPopup(h, a.tabId);
+  const row = popup.locator(rowOf(a.tabId));
+  const input = row.locator('.value-input');
+
+  await input.fill('50');
+  await input.press('Enter');
+  await expect.poll(async () => (await stats(popup))[0]?.rms ?? 0).toBeGreaterThan(0.05);
+
+  // The captured copy of the audio plays from the extension, so muting must silence it too.
+  await row.locator('.mute-btn').click();
+  await expect(row).toHaveAttribute('data-muted', 'true');
+  await expect.poll(async () => (await stats(popup))[0]?.rms ?? 1).toBeLessThan(0.002);
+
+  await row.locator('.mute-btn').click();
+  await expect.poll(async () => (await stats(popup))[0]?.rms ?? 0).toBeGreaterThan(0.05);
+
+  // Changing the volume while muted must not bring the sound back.
+  await row.locator('.mute-btn').click();
+  await input.fill('80');
+  await input.press('Enter');
+  await expect.poll(async () => (await tabStates(h))[a.tabId]?.volume).toBe(80);
+  await expect.poll(async () => (await stats(popup))[0]?.rms ?? 1).toBeLessThan(0.002);
+});
+
+test('a tab muted before its volume changes stays silent', async () => {
+  const a = await openTone(h, 'Tone A');
+  await markInvoked(h, [a.tabId]);
+  await h.worker.evaluate((id) => chrome.tabs.update(id, { muted: true }), a.tabId);
+  const popup = await openPopup(h, a.tabId);
+  const input = popup.locator(`${rowOf(a.tabId)} .value-input`);
+
+  await input.fill('150');
+  await input.press('Enter');
+  await input.fill('60');
+  await input.press('Enter');
+  await expect.poll(async () => (await stats(popup)).length).toBe(1);
+  await expect.poll(async () => (await stats(popup))[0]?.rms ?? 1).toBeLessThan(0.002);
+});
