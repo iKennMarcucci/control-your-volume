@@ -74,6 +74,14 @@
 
         <div class="setting">
           <div class="setting-text">
+            <label class="setting-label" for="setting-free" data-i18n="settingsFree"></label>
+            <p class="hint" id="setting-free-hint" data-i18n="settingsFreeHint"></p>
+          </div>
+          <input class="switch" id="setting-free" type="checkbox" role="switch" aria-checked="false" aria-describedby="setting-free-hint" />
+        </div>
+
+        <div class="setting">
+          <div class="setting-text">
             <label class="setting-label" for="setting-badge" data-i18n="settingsBadge"></label>
             <p class="hint" id="setting-badge-hint" data-i18n="settingsBadgeHint"></p>
           </div>
@@ -142,9 +150,10 @@
           </label>
           <div class="row-notice" hidden>
             <p class="notice-text"></p>
-            <button class="btn btn-secondary btn-small go-btn" type="button" data-i18n="goToTab"></button>
+            <button class="btn btn-secondary btn-small allow-btn" type="button" data-i18n="allowFree"></button>
           </div>
         </div>
+        <p class="row-hint" hidden></p>
       </li>
     </template>
 

@@ -54,6 +54,9 @@ let query = '';
 let othersOpen = false;
 /** Rows that failed to capture in this popup session, with the reason. */
 const failures = new Map<number, RowState>();
+/** Whether the user allowed site access, which lets us control tabs they never visited. */
+let siteAccess = false;
+const ALL_SITES: chrome.permissions.Permissions = { origins: ['<all_urls>'] };
 
 // ---------------------------------------------------------------------------
 // Static text, theme
@@ -95,6 +98,7 @@ interface Row {
   mute: HTMLButtonElement;
   notice: HTMLElement;
   noticeText: HTMLElement;
+  hint: HTMLElement;
   /** Volume shown locally while the user interacts; storage updates must not fight it. */
   localVolume: number | null;
   dragging: boolean;
@@ -127,6 +131,7 @@ function createRow(tabId: number): Row {
     mute: q('.mute-btn'),
     notice: q('.row-notice'),
     noticeText: q('.notice-text'),
+    hint: q('.row-hint'),
     localVolume: null,
     dragging: false,
     inflight: false,
@@ -201,9 +206,8 @@ function bindRow(row: Row): void {
   });
   valueInput.addEventListener('blur', () => commitValueInput(row));
 
-  row.mute.addEventListener('click', async () => {
-    const tab = tabs.find((x) => x.id === row.tabId);
-    if (tab) await chrome.tabs.update(row.tabId, { muted: !tab.mutedInfo?.muted });
+  row.mute.addEventListener('click', () => {
+    void sendToBackground({ target: 'background', type: 'toggle-mute', tabId: row.tabId });
   });
 
   const goToTab = async () => {
@@ -214,7 +218,7 @@ function bindRow(row: Row): void {
     window.close();
   };
   row.title.addEventListener('click', goToTab);
-  row.el.querySelector('.go-btn')?.addEventListener('click', goToTab);
+  row.el.querySelector('.allow-btn')?.addEventListener('click', () => void requestSiteAccess());
 }
 
 function currentVolume(row: Row): number {
@@ -286,7 +290,8 @@ function rowState(tab: Tab): RowState {
   const failure = failures.get(tab.id);
   if (failure) return failure;
   if (tab.id === currentTabId || tabStates[tab.id]?.captured || invoked.has(tab.id)) return 'ready';
-  // Tabs at 100% that were never opened with the extension can't be captured by Chrome.
+  // With site access, tabs Chrome won't capture are controlled through their media elements.
+  if (siteAccess) return 'ready';
   return 'locked';
 }
 
@@ -354,7 +359,19 @@ function updateRow(row: Row, tab: Tab, windowLabel: string | null): void {
   }[state];
   row.notice.hidden = !noticeKey;
   if (noticeKey) row.noticeText.textContent = t(noticeKey);
-  (row.el.querySelector('.go-btn') as HTMLElement).hidden = state !== 'locked';
+  (row.el.querySelector('.allow-btn') as HTMLElement).hidden = state !== 'locked';
+
+  const stored = tabStates[tab.id];
+  const hintKey =
+    state !== 'ready' || !stored?.media
+      ? ''
+      : stored.noMedia
+        ? 'noMedia'
+        : stored.limited
+          ? 'boostLimited'
+          : '';
+  row.hint.hidden = !hintKey;
+  if (hintKey) row.hint.textContent = t(hintKey);
 
   if (!row.dragging && !row.inflight && row.pending === null) {
     const stored = tabStates[tab.id]?.volume ?? DEFAULT_VOLUME;
@@ -483,6 +500,12 @@ function watchTabs(): void {
     if (info.url) failures.delete(tabId);
     if (relevant.some((key) => key in info)) scheduleReload();
   });
+  chrome.permissions.onAdded.addListener(() => {
+    void chrome.permissions.contains(ALL_SITES).then(setSiteAccess);
+  });
+  chrome.permissions.onRemoved.addListener(() => {
+    void chrome.permissions.contains(ALL_SITES).then(setSiteAccess);
+  });
   chrome.tabs.onCreated.addListener(scheduleReload);
   chrome.tabs.onRemoved.addListener(scheduleReload);
   chrome.tabs.onMoved.addListener(scheduleReload);
@@ -523,10 +546,27 @@ function showView(view: 'tabs' | 'settings'): void {
   }
 }
 
+/** Must run straight from a click: the browser only shows the prompt for a user gesture. */
+async function requestSiteAccess(): Promise<boolean> {
+  const granted = await chrome.permissions.request(ALL_SITES).catch(() => false);
+  setSiteAccess(granted);
+  return granted;
+}
+
+function setSiteAccess(granted: boolean): void {
+  siteAccess = granted;
+  if (granted) {
+    for (const [id, reason] of failures) if (reason === 'locked') failures.delete(id);
+  }
+  syncSettingsForm();
+  scheduleRender();
+}
+
 function syncSettingsForm(): void {
   for (const [id, on] of [
     ['setting-boost', settings.boost],
     ['setting-badge', settings.badge],
+    ['setting-free', siteAccess],
   ] as const) {
     const input = $<HTMLInputElement>(id);
     input.checked = on;
@@ -564,6 +604,16 @@ function bindSettings(): void {
   $<HTMLInputElement>('setting-boost').addEventListener('change', (event) => {
     void saveSettings({ boost: (event.target as HTMLInputElement).checked });
   });
+  $<HTMLInputElement>('setting-free').addEventListener('change', async (event) => {
+    if ((event.target as HTMLInputElement).checked) {
+      await requestSiteAccess();
+      return;
+    }
+    // Put media-controlled tabs back to 100% while we can still reach them.
+    await sendToBackground({ target: 'background', type: 'release-media' });
+    const removed = await chrome.permissions.remove(ALL_SITES).catch(() => false);
+    setSiteAccess(!removed);
+  });
   $<HTMLInputElement>('setting-badge').addEventListener('change', (event) => {
     void saveSettings({ badge: (event.target as HTMLInputElement).checked });
   });
@@ -593,13 +643,15 @@ async function main(): Promise<void> {
   document.documentElement.lang = chrome.i18n.getUILanguage();
   localize(document);
 
-  const [settingsValue, states, invokedValue, [active]] = await Promise.all([
+  const [settingsValue, states, invokedValue, [active], access] = await Promise.all([
     getSettings(),
     getTabStates(),
     getInvokedTabs(),
     chrome.tabs.query({ active: true, currentWindow: true }),
+    chrome.permissions.contains(ALL_SITES).catch(() => false),
   ]);
   settings = settingsValue;
+  siteAccess = access;
   tabStates = states;
   invoked = invokedValue;
   // `?tab=<id>` lets tests and screenshots open the popup as a page for a given tab.

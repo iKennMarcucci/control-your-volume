@@ -5,9 +5,17 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+## [1.0.0-alpha.2] - 2026-11-06
+
+### Added
+
+- **Control tabs without visiting them** (optional, in Settings). With site access, tabs you never opened the extension on are adjusted through their `<video>`/`<audio>` elements, without the "shared" indicator. Tabs you did open it on keep using capture. Rows explain when a site can't go above 100% or has no media to adjust.
+- Rows for tabs that can't be controlled yet offer an **Allow** button instead of **Go to tab**.
+
 ### Fixed
 
 - Muting a tab whose volume isn't 100% now silences it. While a tab is captured its sound plays from the extension, so the browser's mute alone didn't reach it.
+- The mute button and the mute shortcut now silence the captured audio immediately instead of waiting for the browser's tab event.
 
 ## [1.0.0-alpha.1] - 2026-11-06
 
@@ -26,5 +34,6 @@ First public alpha.
 - English and Spanish.
 - Capture is released automatically when a tab goes back to 100%.
 
-[Unreleased]: https://github.com/iKennMarcucci/control-your-volume/compare/v1.0.0-alpha.1...HEAD
+[Unreleased]: https://github.com/iKennMarcucci/control-your-volume/compare/v1.0.0-alpha.2...HEAD
+[1.0.0-alpha.2]: https://github.com/iKennMarcucci/control-your-volume/compare/v1.0.0-alpha.1...v1.0.0-alpha.2
 [1.0.0-alpha.1]: https://github.com/iKennMarcucci/control-your-volume/releases/tag/v1.0.0-alpha.1

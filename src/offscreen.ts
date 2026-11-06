@@ -88,6 +88,8 @@ async function start(
   chain.gain.gain.value = targetGain(chain);
   chain.source.connect(chain.gain);
   wire(chain, isBoosted(volume));
+  // Never leave an older graph for this tab playing where no message can reach it.
+  stop(tabId);
   chains.set(tabId, chain);
 
   for (const track of stream.getAudioTracks()) {

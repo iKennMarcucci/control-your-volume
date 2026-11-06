@@ -4,7 +4,7 @@
  * and look at artifacts/screenshots/.
  */
 import { test } from '@playwright/test';
-import { launch, markInvoked, openPopup, openTone } from './harness.ts';
+import { launch, markInvoked, openMedia, openPopup, openTone } from './harness.ts';
 
 test.skip(!process.env.SCREENSHOTS, 'Set SCREENSHOTS=1 to render popup screenshots');
 
@@ -89,5 +89,33 @@ test('many tabs with search', async () => {
   await shoot(popup, 'many-tabs');
   await popup.fill('#search', 'sound');
   await shoot(popup, 'search');
+  await h.close();
+});
+
+test('free control: locked rows, hints and settings', async () => {
+  let h = await launch({ captureEverywhere: false });
+  let current = await openTone(h, 'Lo-fi beats to relax/study to — 24/7 live radio');
+  await openMedia(h, 'Al Macbook Neo le salió competencia');
+  let popup = await openPopup(h, current.tabId);
+  await shoot(popup, 'free-locked');
+  await h.close();
+
+  h = await launch({ captureEverywhere: false, siteAccess: true });
+  await h.worker.evaluate(() =>
+    chrome.storage.sync.set({ settings: { boost: true, badge: true, theme: 'system' } }),
+  );
+  current = await openTone(h, 'Lo-fi beats to relax/study to — 24/7 live radio');
+  const same = await openMedia(h, 'Podcast episode 142');
+  const cross = await openMedia(h, 'Embedded player', `${h.otherOrigin}/tone.wav`);
+  const game = await openTone(h, 'Browser game', 330);
+  popup = await openPopup(h, current.tabId);
+  await setVolume(popup, same.tabId, 70);
+  await setVolume(popup, cross.tabId, 160);
+  await setVolume(popup, game.tabId, 40);
+  await popup.close();
+  popup = await openPopup(h, current.tabId);
+  await shoot(popup, 'free-hints');
+  await popup.click('#open-settings');
+  await shoot(popup, 'free-settings');
   await h.close();
 });

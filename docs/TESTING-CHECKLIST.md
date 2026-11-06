@@ -29,6 +29,16 @@ Open YouTube (or any video), Spotify Web or SoundCloud, and a third site with au
 - [ ] With 2+ browser windows, rows show **Window N** tags that match the windows.
 - [ ] A tab that navigates to another site keeps working, or asks for a visit again.
 
+## Free control
+
+- [ ] With free control off, a tab you never opened the extension on shows **Allow**. Clicking it shows the browser's site access prompt.
+- [ ] After allowing, the setting **Control tabs without visiting them** is on. From another tab, lower YouTube or Spotify to 30% without visiting it. There's no "shared" indicator.
+- [ ] Change the volume with the site's own slider. The extension's level still applies on top of it.
+- [ ] Go to the next video or reload the page. The tab keeps its level.
+- [ ] With the booster on, 150% works on YouTube. On a site that can't be boosted, the row explains it.
+- [ ] Mute works on free-control tabs.
+- [ ] Turn free control off. Those tabs go back to 100% and the browser removes the site access.
+
 ## Booster
 
 - [ ] By default the slider stops at 100% and typing `150` gives 100.

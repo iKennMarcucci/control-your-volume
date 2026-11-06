@@ -128,7 +128,7 @@ test('tabs never opened with the extension explain how to control them', async (
   const locked = popup.locator(rowOf(b.tabId));
   await expect(locked).toHaveAttribute('data-state', 'locked');
   await expect(locked.locator('.notice-text')).toHaveText(await msg(popup, 'notInvoked'));
-  await expect(locked.locator('.go-btn')).toBeVisible();
+  await expect(locked.locator('.allow-btn')).toBeVisible();
   await expect(locked.locator('.slider')).toBeHidden();
   await expect(popup.locator(rowOf(a.tabId))).toHaveAttribute('data-state', 'ready');
 });
@@ -172,7 +172,7 @@ test('restricted pages show why they cannot be controlled', async () => {
   const popup = await openPopup(h, tabId);
   const row = popup.locator(rowOf(tabId));
   await expect(row).toHaveAttribute('data-state', 'restricted');
-  await expect(row.locator('.go-btn')).toBeHidden();
+  await expect(row.locator('.allow-btn')).toBeHidden();
 });
 
 test('mute silences a tab whose volume was changed', async () => {

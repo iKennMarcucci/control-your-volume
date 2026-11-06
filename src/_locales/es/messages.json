@@ -78,7 +78,22 @@
     "message": "El navegador no permite que las extensiones cambien el volumen de esta página."
   },
   "notInvoked": {
-    "message": "Abre la extensión en esta pestaña una vez para controlarla."
+    "message": "Permite el control libre para ajustar esta pestaña desde aquí."
+  },
+  "allowFree": {
+    "message": "Permitir"
+  },
+  "boostLimited": {
+    "message": "Este sitio no puede pasar de 100% desde aquí. Abre la extensión en esta pestaña para amplificarlo."
+  },
+  "noMedia": {
+    "message": "No se encontró video ni audio en esta página. Si no cambia, abre la extensión en esta pestaña."
+  },
+  "settingsFree": {
+    "message": "Controlar pestañas sin visitarlas"
+  },
+  "settingsFreeHint": {
+    "message": "Ajusta el video y el audio de cualquier pestaña desde aquí. El navegador pedirá acceso a los sitios web; no se lee ni se envía nada."
   },
   "captureFailed": {
     "message": "No se pudo controlar el audio de esta pestaña. Inténtalo de nuevo."
@@ -137,7 +152,7 @@
     "message": "Cómo funciona"
   },
   "howItWorksHint": {
-    "message": "Mientras el volumen de una pestaña no esté en 100%, el navegador la muestra como compartida. Al volver a 100%, deja de hacerlo."
+    "message": "Las pestañas donde abres la extensión se capturan: mientras no estén en 100%, el navegador las muestra como compartidas. Con el control libre, las demás se ajustan a través de su video y audio, sin ese indicador."
   },
   "resetAll": {
     "message": "Restablecer todas a 100%"

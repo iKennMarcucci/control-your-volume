@@ -78,7 +78,22 @@
     "message": "The browser doesn’t allow extensions to change the volume of this page."
   },
   "notInvoked": {
-    "message": "Open the extension on this tab once to control it."
+    "message": "Allow free control to adjust this tab from here."
+  },
+  "allowFree": {
+    "message": "Allow"
+  },
+  "boostLimited": {
+    "message": "This site can’t go above 100% from here. Open the extension on this tab to boost it."
+  },
+  "noMedia": {
+    "message": "No video or audio found on this page. If nothing changes, open the extension on this tab."
+  },
+  "settingsFree": {
+    "message": "Control tabs without visiting them"
+  },
+  "settingsFreeHint": {
+    "message": "Adjusts the video and audio of any tab from here. The browser will ask for access to websites; nothing is read or sent anywhere."
   },
   "captureFailed": {
     "message": "Couldn’t control this tab’s audio. Try again."
@@ -137,7 +152,7 @@
     "message": "How it works"
   },
   "howItWorksHint": {
-    "message": "While a tab’s volume isn’t 100%, the browser shows that tab as shared. Back at 100%, it stops."
+    "message": "Tabs where you open the extension are captured: while they aren’t at 100%, the browser shows them as shared. With free control, other tabs are adjusted through their video and audio, without that indicator."
   },
   "resetAll": {
     "message": "Reset all tabs to 100%"

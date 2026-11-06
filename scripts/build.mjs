@@ -20,6 +20,19 @@ function copyStatic() {
 rmSync(outdir, { recursive: true, force: true });
 mkdirSync(outdir, { recursive: true });
 
+const shared = {
+  outdir,
+  bundle: true,
+  target: 'chrome123',
+  minify: !watch,
+  sourcemap: watch ? 'inline' : false,
+  legalComments: 'none',
+  logLevel: 'info',
+};
+
+// Injected with chrome.scripting into web pages, so it must be a classic script.
+const mediaCtx = await context({ ...shared, entryPoints: ['src/media.ts'], format: 'iife' });
+
 const ctx = await context({
   entryPoints: ['src/background.ts', 'src/offscreen.ts', 'src/popup.ts', 'src/popup.css'],
   outdir,
@@ -35,9 +48,12 @@ const ctx = await context({
 });
 
 if (watch) {
+  await mediaCtx.watch();
   await ctx.watch();
   console.log('Watching for changes… load dist/ as an unpacked extension.');
 } else {
+  await mediaCtx.rebuild();
+  await mediaCtx.dispose();
   await ctx.rebuild();
   await ctx.dispose();
 }

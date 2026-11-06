@@ -24,7 +24,8 @@
 - **Global shortcuts**: <kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>↑</kbd>/<kbd>↓</kbd> raise or lower the current tab, <kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>M</kbd> mutes it, <kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>V</kbd> opens the popup (⌥⇧ on macOS). You can change them in `chrome://extensions/shortcuts`.
 - **Badge** on the toolbar icon with the current tab's volume when it isn't 100%.
 - **English and Spanish**, light/dark/system themes. Built on Vercel's [Geist](https://vercel.com/geist) design language.
-- **Private**: no network requests, no analytics, no host permissions. See [PRIVACY.md](PRIVACY.md).
+- **Free control (optional)**: adjust tabs you never opened the extension on. Turn on **Control tabs without visiting them** in Settings.
+- **Private**: no network requests and no analytics. Site access is only requested if you turn on free control. See [PRIVACY.md](PRIVACY.md).
 
 ## Install
 
@@ -32,10 +33,16 @@ Download the latest `.zip` from [Releases](https://github.com/iKennMarcucci/cont
 
 ## How it works and its limits
 
-The extension captures a tab's audio with `chrome.tabCapture` and plays it back through a Web Audio `GainNode` in an offscreen document. That's the only way to reliably control **all** audio in a tab: videos, games, players inside iframes and Web Audio apps. It comes with browser rules you should know about:
+The extension uses two engines and picks one per tab:
 
-- **The browser shows the tab as "shared"** while its volume isn't 100%. Set it back to 100% and the capture stops after about a second.
-- **Each tab needs one visit.** Chromium only lets an extension capture a tab after you open the extension (or use one of its shortcuts) on that tab. Tabs you haven't visited show a **Go to tab** button. After that, you can control them from anywhere until they navigate to a new page.
+1. **Capture.** On tabs where you opened the extension (or used one of its shortcuts), it captures the tab's audio with `chrome.tabCapture` and plays it back through a Web Audio `GainNode` in an offscreen document. This controls **all** audio in a tab: videos, games, players inside iframes and Web Audio apps.
+2. **Media elements (free control).** Chromium only allows capture after you open the extension on a tab. If you turn on **Control tabs without visiting them**, other tabs are adjusted through their `<video>` and `<audio>` elements instead. A small script is injected only into a tab whose volume you change. Volumes above 100% use Web Audio when the site's media allows it.
+
+Browser rules you should know about:
+
+- **Captured tabs show as "shared"** while their volume isn't 100%. Set it back to 100% and the capture stops after about a second. Free control doesn't show this indicator.
+- **Without free control, each tab needs one visit.** Tabs you haven't opened the extension on offer an **Allow** button for free control. You can also click the tab's title to go there.
+- **Free control only reaches `<video>` and `<audio>`.** Sound made with Web Audio (games, some web apps) and players inside other-site iframes may not change. Media served from another site without CORS can't go above 100%. The row tells you when this happens; opening the extension on that tab switches it to capture.
 - **Fullscreen video** stays inside the browser window while the tab is being captured.
 - **Browser pages** (`chrome://…`, the extension stores) can't be captured. You can still mute them.
 - **Mute** uses the browser's own tab mute, so it works on every tab.
@@ -84,7 +91,7 @@ Pushing a `v*` tag runs the release workflow: checks, build, zip and a GitHub Re
 
 ## Español
 
-**Control Your Volume!** te deja subir o bajar el volumen de cada pestaña por separado, con un amplificador opcional de hasta 200%. Está en español e inglés y sigue el idioma de tu navegador. Para instalarla, descarga el `.zip` de [Releases](https://github.com/iKennMarcucci/control-your-volume/releases), descomprímelo y cárgalo con **Cargar descomprimida** en `chrome://extensions` con el **Modo de desarrollador** activado.
+**Control Your Volume!** te deja subir o bajar el volumen de cada pestaña por separado, con un amplificador opcional de hasta 200%. Está en español e inglés y sigue el idioma de tu navegador. Si activas **Controlar pestañas sin visitarlas** en Configuración, puedes ajustar cualquier pestaña sin abrir la extensión en ella (el navegador te pedirá acceso a los sitios; no se lee ni se envía nada). Para instalarla, descarga el `.zip` de [Releases](https://github.com/iKennMarcucci/control-your-volume/releases), descomprímelo y cárgalo con **Cargar descomprimida** en `chrome://extensions` con el **Modo de desarrollador** activado.
 
 ## License
 
