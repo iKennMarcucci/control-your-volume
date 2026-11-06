@@ -42,8 +42,10 @@ export async function launch(
   const address = server.address();
   const port = typeof address === 'object' && address ? address.port : 0;
 
+  // E2E_BROWSER=/path/to/browser runs the suite in an installed browser (Brave, Edge, Chrome).
+  const executablePath = process.env.E2E_BROWSER;
   const context = await chromium.launchPersistentContext('', {
-    channel: 'chromium',
+    ...(executablePath ? { executablePath } : { channel: 'chromium' }),
     headless: !process.env.HEADED,
     // Playwright mutes audio by default, which would make every captured tab silent.
     ignoreDefaultArgs: ['--mute-audio'],

@@ -201,9 +201,8 @@ function bindRow(row: Row): void {
   });
   valueInput.addEventListener('blur', () => commitValueInput(row));
 
-  row.mute.addEventListener('click', async () => {
-    const tab = tabs.find((x) => x.id === row.tabId);
-    if (tab) await chrome.tabs.update(row.tabId, { muted: !tab.mutedInfo?.muted });
+  row.mute.addEventListener('click', () => {
+    void sendToBackground({ target: 'background', type: 'toggle-mute', tabId: row.tabId });
   });
 
   const goToTab = async () => {

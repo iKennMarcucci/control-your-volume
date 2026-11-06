@@ -7,6 +7,7 @@ export type SetVolumeResult = { ok: true; volume: number } | { ok: false; reason
 export type BackgroundRequest =
   | { target: 'background'; type: 'popup-opened'; tabId: number }
   | { target: 'background'; type: 'set-volume'; tabId: number; volume: number }
+  | { target: 'background'; type: 'toggle-mute'; tabId: number }
   | { target: 'background'; type: 'reset-all' }
   | { target: 'background'; type: 'capture-ended'; tabId: number };
 

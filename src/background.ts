@@ -189,6 +189,17 @@ async function syncMute(tabId: number, muted?: boolean): Promise<void> {
   });
 }
 
+/**
+ * Flips the tab's mute and applies it to the audio graph right away, instead of waiting for
+ * tabs.onUpdated (which a sleeping service worker may deliver late).
+ */
+async function toggleMute(tabId: number): Promise<boolean> {
+  const muted = !(await isTabMuted(tabId));
+  await chrome.tabs.update(tabId, { muted });
+  await syncMute(tabId, muted);
+  return muted;
+}
+
 async function stopCapture(tabId: number): Promise<void> {
   clearTimeout(releaseTimers.get(tabId));
   releaseTimers.delete(tabId);
@@ -314,6 +325,8 @@ chrome.runtime.onMessage.addListener((message: BackgroundRequest, _sender, sendR
       return respond(updateInvoked((ids) => ids.add(message.tabId)));
     case 'set-volume':
       return respond(setVolume(message.tabId, message.volume));
+    case 'toggle-mute':
+      return respond(toggleMute(message.tabId));
     case 'reset-all':
       return respond(resetAll());
     case 'capture-ended':
@@ -333,7 +346,7 @@ chrome.commands.onCommand.addListener(async (command, tab) => {
   // Keyboard shortcuts also grant activeTab for the focused tab.
   await updateInvoked((ids) => ids.add(tabId));
   if (command === 'toggle-mute') {
-    await chrome.tabs.update(tabId, { muted: !tab?.mutedInfo?.muted });
+    await toggleMute(tabId);
     return;
   }
   const direction = command === 'volume-up' ? 1 : command === 'volume-down' ? -1 : 0;

@@ -5,9 +5,12 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+## [1.0.0-alpha.2] - 2026-11-06
+
 ### Fixed
 
 - Muting a tab whose volume isn't 100% now silences it. While a tab is captured its sound plays from the extension, so the browser's mute alone didn't reach it.
+- The mute button and the mute shortcut now silence the captured audio immediately instead of waiting for the browser's tab event.
 
 ## [1.0.0-alpha.1] - 2026-11-06
 
@@ -26,5 +29,6 @@ First public alpha.
 - English and Spanish.
 - Capture is released automatically when a tab goes back to 100%.
 
-[Unreleased]: https://github.com/iKennMarcucci/control-your-volume/compare/v1.0.0-alpha.1...HEAD
+[Unreleased]: https://github.com/iKennMarcucci/control-your-volume/compare/v1.0.0-alpha.2...HEAD
+[1.0.0-alpha.2]: https://github.com/iKennMarcucci/control-your-volume/compare/v1.0.0-alpha.1...v1.0.0-alpha.2
 [1.0.0-alpha.1]: https://github.com/iKennMarcucci/control-your-volume/releases/tag/v1.0.0-alpha.1
