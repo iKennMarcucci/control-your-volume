@@ -1,6 +1,7 @@
 import type {
   BackgroundRequest,
   CaptureError,
+  MediaResult,
   OffscreenRequest,
   OffscreenResult,
   SetVolumeResult,
@@ -206,6 +207,60 @@ async function stopCapture(tabId: number): Promise<void> {
   await sendToOffscreen({ target: 'offscreen', type: 'stop', tabId });
 }
 
+// ---------------------------------------------------------------------------
+// Media-element engine (tabs the user never opened the extension on)
+// ---------------------------------------------------------------------------
+const ALL_SITES: chrome.permissions.Permissions = { origins: ['<all_urls>'] };
+
+function hasSiteAccess(): Promise<boolean> {
+  return chrome.permissions.contains(ALL_SITES).catch(() => false);
+}
+
+/** Injects media.js (once per frame) and sets the level of every <video>/<audio> in the tab. */
+async function setMediaVolume(tabId: number, volume: number): Promise<MediaResult | null> {
+  const run = async (allFrames: boolean) => {
+    const target = { tabId, allFrames };
+    await chrome.scripting.executeScript({ target, files: ['media.js'] });
+    return chrome.scripting.executeScript({
+      target,
+      func: (v: number) => globalThis.__cyvMedia?.set(v) ?? null,
+      args: [volume],
+    });
+  };
+  let results: chrome.scripting.InjectionResult<MediaResult | null>[];
+  try {
+    results = (await run(true)) as typeof results;
+  } catch {
+    // A frame we can't script (a sandboxed or restricted iframe) fails the whole call.
+    try {
+      results = (await run(false)) as typeof results;
+    } catch (error) {
+      console.warn('[cyv] media control failed', tabId, error);
+      return null;
+    }
+  }
+  return results.reduce<MediaResult>(
+    (sum, { result }) => ({
+      count: sum.count + (result?.count ?? 0),
+      limited: sum.limited || Boolean(result?.limited),
+    }),
+    { count: 0, limited: false },
+  );
+}
+
+/** Puts every media-controlled tab back to 100% (before site access is taken away). */
+async function releaseMedia(): Promise<void> {
+  const states = await getTabStates();
+  const ids = Object.entries(states)
+    .filter(([, s]) => s.media)
+    .map(([id]) => Number(id));
+  await Promise.all(ids.map((id) => setMediaVolume(id, DEFAULT_VOLUME)));
+  await updateStates((all) => {
+    for (const id of ids) delete all[id];
+  });
+  await Promise.all(ids.map((id) => refreshBadge(id, DEFAULT_VOLUME)));
+}
+
 async function applyVolume(tabId: number, requested: number): Promise<SetVolumeResult> {
   const { boost } = await getSettings();
   const volume = clampVolume(requested, boost);
@@ -223,6 +278,9 @@ async function applyVolume(tabId: number, requested: number): Promise<SetVolumeR
 
   const current: TabAudioState | undefined = (await getTabStates())[tabId];
   let captured = current?.captured ?? false;
+  let media = current?.media ?? false;
+  let limited = false;
+  let noMedia = false;
 
   if (captured) {
     const result = await sendToOffscreen({ target: 'offscreen', type: 'set', tabId, volume });
@@ -230,13 +288,37 @@ async function applyVolume(tabId: number, requested: number): Promise<SetVolumeR
     if (!result.ok) captured = false;
   }
   if (!captured && volume !== DEFAULT_VOLUME) {
-    const result = await startCapture(tabId, volume);
-    if (!result.ok) return result;
-    captured = true;
+    // Capture hears everything the tab plays, so use it whenever the browser allows it. A tab
+    // already in media mode stays there, unless it needs a boost that media mode couldn't give.
+    const tryCapture = !media || (isBoosted(volume) && Boolean(current?.limited));
+    let refused: CaptureError | null = null;
+    if (tryCapture) {
+      const result = await startCapture(tabId, volume);
+      if (result.ok) {
+        captured = true;
+        if (media) await setMediaVolume(tabId, DEFAULT_VOLUME);
+        media = false;
+      } else {
+        refused = result.reason;
+      }
+    }
+    if (!captured) {
+      if (refused && refused !== 'not-invoked') return { ok: false, reason: refused };
+      if (!(await hasSiteAccess())) return { ok: false, reason: 'not-invoked' };
+      const result = await setMediaVolume(tabId, volume);
+      if (!result) return { ok: false, reason: 'failed' };
+      media = true;
+      limited = result.limited && isBoosted(volume);
+      noMedia = result.count === 0;
+    }
+  } else if (!captured && media) {
+    await setMediaVolume(tabId, DEFAULT_VOLUME);
+    media = false;
   }
 
   await updateStates((states) => {
     if (volume === DEFAULT_VOLUME && !captured) delete states[tabId];
+    else if (media) states[tabId] = { volume, captured: false, media, limited, noMedia };
     else states[tabId] = { volume, captured };
   });
   await refreshBadge(tabId, volume);
@@ -298,6 +380,7 @@ async function resetAll(): Promise<void> {
     Object.entries(states).map(async ([id, s]) => {
       const tabId = Number(id);
       if (s.captured) await stopCapture(tabId);
+      if (s.media) await setMediaVolume(tabId, DEFAULT_VOLUME);
       await chrome.action.setBadgeText({ tabId, text: '' }).catch(() => undefined);
     }),
   );
@@ -329,6 +412,8 @@ chrome.runtime.onMessage.addListener((message: BackgroundRequest, _sender, sendR
       return respond(toggleMute(message.tabId));
     case 'reset-all':
       return respond(resetAll());
+    case 'release-media':
+      return respond(releaseMedia());
     case 'capture-ended':
       return respond(
         updateStates((states) => {
@@ -369,7 +454,10 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
   if (changeInfo.status === 'complete') {
     void getTabStates().then((states) => {
       const state = states[tabId];
-      if (state) void refreshBadge(tabId, state.volume);
+      if (!state) return;
+      void refreshBadge(tabId, state.volume);
+      // A new page starts at its own volume: apply the tab's level to it again.
+      if (state.media) void setVolume(tabId, state.volume);
     });
   }
 });
@@ -384,6 +472,19 @@ onSettingsChanged(async (next, prev) => {
     );
   }
   if (prev.badge !== next.badge) await refreshAllBadges();
+});
+
+// Site access removed from the browser's extension page: media-mode tabs can't be reached now.
+chrome.permissions.onRemoved.addListener(async (removed) => {
+  if (!removed.origins?.length) return;
+  const states = await getTabStates();
+  const ids = Object.entries(states)
+    .filter(([, s]) => s.media)
+    .map(([id]) => Number(id));
+  await updateStates((all) => {
+    for (const id of ids) delete all[id];
+  });
+  await Promise.all(ids.map((id) => refreshBadge(id, DEFAULT_VOLUME)));
 });
 
 chrome.runtime.onStartup.addListener(() => {

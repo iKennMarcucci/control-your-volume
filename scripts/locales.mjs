@@ -36,8 +36,22 @@ const strings = {
     'El navegador no permite que las extensiones cambien el volumen de esta página.',
   ],
   notInvoked: [
-    'Open the extension on this tab once to control it.',
-    'Abre la extensión en esta pestaña una vez para controlarla.',
+    'Allow free control to adjust this tab from here.',
+    'Permite el control libre para ajustar esta pestaña desde aquí.',
+  ],
+  allowFree: ['Allow', 'Permitir'],
+  boostLimited: [
+    'This site can’t go above 100% from here. Open the extension on this tab to boost it.',
+    'Este sitio no puede pasar de 100% desde aquí. Abre la extensión en esta pestaña para amplificarlo.',
+  ],
+  noMedia: [
+    'No video or audio found on this page. If nothing changes, open the extension on this tab.',
+    'No se encontró video ni audio en esta página. Si no cambia, abre la extensión en esta pestaña.',
+  ],
+  settingsFree: ['Control tabs without visiting them', 'Controlar pestañas sin visitarlas'],
+  settingsFreeHint: [
+    'Adjusts the video and audio of any tab from here. The browser will ask for access to websites; nothing is read or sent anywhere.',
+    'Ajusta el video y el audio de cualquier pestaña desde aquí. El navegador pedirá acceso a los sitios web; no se lee ni se envía nada.',
   ],
   captureFailed: [
     'Couldn’t control this tab’s audio. Try again.',
@@ -69,8 +83,8 @@ const strings = {
   customize: ['Customize', 'Personalizar'],
   howItWorks: ['How it works', 'Cómo funciona'],
   howItWorksHint: [
-    'While a tab’s volume isn’t 100%, the browser shows that tab as shared. Back at 100%, it stops.',
-    'Mientras el volumen de una pestaña no esté en 100%, el navegador la muestra como compartida. Al volver a 100%, deja de hacerlo.',
+    'Tabs where you open the extension are captured: while they aren’t at 100%, the browser shows them as shared. With free control, other tabs are adjusted through their video and audio, without that indicator.',
+    'Las pestañas donde abres la extensión se capturan: mientras no estén en 100%, el navegador las muestra como compartidas. Con el control libre, las demás se ajustan a través de su video y audio, sin ese indicador.',
   ],
   resetAll: ['Reset all tabs to 100%', 'Restablecer todas a 100%'],
   resetDone: ['All tabs are back to 100%', 'Todas las pestañas volvieron a 100%'],

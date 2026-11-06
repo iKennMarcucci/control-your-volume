@@ -653,6 +653,13 @@ svg {
   color: var(--gray-900);
 }
 
+.row-hint {
+  margin: 2px 0 0 26px;
+  font-size: 12px;
+  line-height: 1.35;
+  color: var(--gray-900);
+}
+
 .row[data-state="failed"] .notice-text {
   color: var(--red-900);
 }

@@ -7,6 +7,11 @@ All notable changes to this project are documented here. The format follows
 
 ## [1.0.0-alpha.2] - 2026-11-06
 
+### Added
+
+- **Control tabs without visiting them** (optional, in Settings). With site access, tabs you never opened the extension on are adjusted through their `<video>`/`<audio>` elements, without the "shared" indicator. Tabs you did open it on keep using capture. Rows explain when a site can't go above 100% or has no media to adjust.
+- Rows for tabs that can't be controlled yet offer an **Allow** button instead of **Go to tab**.
+
 ### Fixed
 
 - Muting a tab whose volume isn't 100% now silences it. While a tab is captured its sound plays from the extension, so the browser's mute alone didn't reach it.

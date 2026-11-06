@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Media page</title>
+  </head>
+  <body>
+    <h1>Media page</h1>
+    <script>
+      // A looping <audio> element, like most music and video sites use.
+      const params = new URLSearchParams(location.search);
+      document.title = params.get('title') || 'Media page';
+      const audio = document.createElement('audio');
+      audio.loop = true;
+      document.body.append(audio);
+      audio.src = params.get('src') || '/tone.wav';
+      audio.play().catch(() => undefined);
+    </script>
+  </body>
+</html>

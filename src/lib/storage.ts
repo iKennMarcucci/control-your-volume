@@ -16,6 +16,12 @@ export interface TabAudioState {
   volume: number;
   /** True while the offscreen document holds a capture stream for the tab. */
   captured: boolean;
+  /** Controlled through its <video>/<audio> elements instead (the tab was never invoked). */
+  media?: boolean;
+  /** Media mode couldn't take some of the tab's audio above 100%. */
+  limited?: boolean;
+  /** Media mode found no <video>/<audio> to adjust (Web Audio games, some web apps). */
+  noMedia?: boolean;
 }
 
 export type TabStateMap = Record<string, TabAudioState>;

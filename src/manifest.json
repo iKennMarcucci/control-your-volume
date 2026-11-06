@@ -21,7 +21,8 @@
     }
   },
   "background": { "service_worker": "background.js", "type": "module" },
-  "permissions": ["tabCapture", "offscreen", "tabs", "storage", "favicon"],
+  "permissions": ["tabCapture", "offscreen", "tabs", "storage", "favicon", "scripting"],
+  "optional_host_permissions": ["<all_urls>"],
   "commands": {
     "_execute_action": {
       "suggested_key": { "default": "Alt+Shift+V" },
