@@ -11,8 +11,16 @@ export type BackgroundRequest =
   | { target: 'background'; type: 'capture-ended'; tabId: number };
 
 export type OffscreenRequest =
-  | { target: 'offscreen'; type: 'start'; tabId: number; streamId: string; volume: number }
+  | {
+      target: 'offscreen';
+      type: 'start';
+      tabId: number;
+      streamId: string;
+      volume: number;
+      muted: boolean;
+    }
   | { target: 'offscreen'; type: 'set'; tabId: number; volume: number }
+  | { target: 'offscreen'; type: 'mute'; tabId: number; muted: boolean }
   | { target: 'offscreen'; type: 'stop'; tabId: number }
   | { target: 'offscreen'; type: 'stats' };
 
@@ -22,6 +30,7 @@ export interface ChainStats {
   tabId: number;
   gain: number;
   limiter: boolean;
+  muted: boolean;
   /** Root mean square of the processed signal, 0..1. */
   rms: number;
   context: AudioContextState;

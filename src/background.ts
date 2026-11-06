@@ -156,13 +156,37 @@ async function startCapture(tabId: number, volume: number): Promise<SetVolumeRes
     tabId,
     streamId,
     volume,
+    muted: await isTabMuted(tabId),
   });
   if (!result.ok) {
     console.warn('[cyv] capture failed', tabId, result.error);
     return { ok: false, reason: 'failed' };
   }
+  // The tab may have been muted or unmuted while the capture was starting.
+  await syncMute(tabId);
   await updateInvoked((ids) => ids.add(tabId));
   return { ok: true, volume };
+}
+
+async function isTabMuted(tabId: number): Promise<boolean> {
+  try {
+    return Boolean((await chrome.tabs.get(tabId)).mutedInfo?.muted);
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * While a tab is captured, its sound plays from the offscreen document, so the browser's tab
+ * mute can't silence it. Mirror the tab's mute state into the audio graph instead.
+ */
+async function syncMute(tabId: number, muted?: boolean): Promise<void> {
+  await sendToOffscreen({
+    target: 'offscreen',
+    type: 'mute',
+    tabId,
+    muted: muted ?? (await isTabMuted(tabId)),
+  });
 }
 
 async function stopCapture(tabId: number): Promise<void> {
@@ -324,6 +348,7 @@ chrome.tabs.onRemoved.addListener((tabId) => {
 });
 
 chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
+  if (changeInfo.mutedInfo) void syncMute(tabId, changeInfo.mutedInfo.muted);
   // A new document revokes activeTab, so Chrome will refuse new captures until re-invoked.
   if (changeInfo.status === 'loading' && changeInfo.url) {
     void updateInvoked((ids) => ids.delete(tabId));

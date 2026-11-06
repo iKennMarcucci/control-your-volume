@@ -5,6 +5,10 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+### Fixed
+
+- Muting a tab whose volume isn't 100% now silences it. While a tab is captured its sound plays from the extension, so the browser's mute alone didn't reach it.
+
 ## [1.0.0-alpha.1] - 2026-11-06
 
 First public alpha.

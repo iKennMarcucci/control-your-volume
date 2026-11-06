@@ -12,6 +12,12 @@ interface Chain {
   limiter: DynamicsCompressorNode;
   limiterOn: boolean;
   analyser: AnalyserNode | null;
+  volume: number;
+  /**
+   * Mirrors the browser's tab mute. While a tab is captured its sound comes out of this
+   * document, so the browser's own mute can't silence it: we have to do it here.
+   */
+  muted: boolean;
 }
 
 const chains = new Map<number, Chain>();
@@ -37,15 +43,24 @@ function wire(chain: Chain, limiterOn: boolean): void {
   if (chain.analyser) output(chain).connect(chain.analyser);
 }
 
-function applyVolume(chain: Chain, volume: number): void {
+function targetGain(chain: Chain): number {
+  return chain.muted ? 0 : volumeToGain(chain.volume);
+}
+
+function applyGain(chain: Chain): void {
   const ctx = audioContext();
   // Short ramp avoids clicks ("zipper noise") while dragging the slider.
-  chain.gain.gain.setTargetAtTime(volumeToGain(volume), ctx.currentTime, 0.015);
-  const boosted = isBoosted(volume);
+  chain.gain.gain.setTargetAtTime(targetGain(chain), ctx.currentTime, 0.015);
+  const boosted = isBoosted(chain.volume);
   if (boosted !== chain.limiterOn) wire(chain, boosted);
 }
 
-async function start(tabId: number, streamId: string, volume: number): Promise<void> {
+async function start(
+  tabId: number,
+  streamId: string,
+  volume: number,
+  muted: boolean,
+): Promise<void> {
   stop(tabId);
   const stream = await navigator.mediaDevices.getUserMedia({
     audio: { mandatory: { chromeMediaSource: 'tab', chromeMediaSourceId: streamId } },
@@ -67,8 +82,10 @@ async function start(tabId: number, streamId: string, volume: number): Promise<v
     limiter,
     limiterOn: false,
     analyser: null,
+    volume,
+    muted,
   };
-  chain.gain.gain.value = volumeToGain(volume);
+  chain.gain.gain.value = targetGain(chain);
   chain.source.connect(chain.gain);
   wire(chain, isBoosted(volume));
   chains.set(tabId, chain);
@@ -108,6 +125,7 @@ function stats(): ChainStats[] {
       tabId,
       gain: chain.gain.gain.value,
       limiter: chain.limiterOn,
+      muted: chain.muted,
       rms: Math.sqrt(sum / samples.length),
       context: audioContext().state,
     };
@@ -117,12 +135,20 @@ function stats(): ChainStats[] {
 async function handle(message: OffscreenRequest): Promise<OffscreenResult | ChainStats[]> {
   switch (message.type) {
     case 'start':
-      await start(message.tabId, message.streamId, message.volume);
+      await start(message.tabId, message.streamId, message.volume, message.muted);
       return { ok: true };
     case 'set': {
       const chain = chains.get(message.tabId);
       if (!chain) return { ok: false, error: 'not-captured' };
-      applyVolume(chain, message.volume);
+      chain.volume = message.volume;
+      applyGain(chain);
+      return { ok: true };
+    }
+    case 'mute': {
+      const chain = chains.get(message.tabId);
+      if (!chain) return { ok: false, error: 'not-captured' };
+      chain.muted = message.muted;
+      applyGain(chain);
       return { ok: true };
     }
     case 'stop':
