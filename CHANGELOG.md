@@ -5,6 +5,14 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+## [1.0.0-beta.1] - 2026-11-06
+
+First beta. Same features as 1.0.0-alpha.2.
+
+### Changed
+
+- Passed the manual testing checklist on macOS (Brave) and Windows.
+
 ## [1.0.0-alpha.2] - 2026-11-06
 
 ### Added
@@ -34,6 +42,7 @@ First public alpha.
 - English and Spanish.
 - Capture is released automatically when a tab goes back to 100%.
 
-[Unreleased]: https://github.com/iKennMarcucci/control-your-volume/compare/v1.0.0-alpha.2...HEAD
+[Unreleased]: https://github.com/iKennMarcucci/control-your-volume/compare/v1.0.0-beta.1...HEAD
+[1.0.0-beta.1]: https://github.com/iKennMarcucci/control-your-volume/compare/v1.0.0-alpha.2...v1.0.0-beta.1
 [1.0.0-alpha.2]: https://github.com/iKennMarcucci/control-your-volume/compare/v1.0.0-alpha.1...v1.0.0-alpha.2
 [1.0.0-alpha.1]: https://github.com/iKennMarcucci/control-your-volume/releases/tag/v1.0.0-alpha.1

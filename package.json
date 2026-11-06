@@ -1,6 +1,6 @@
 {
   "name": "control-your-volume",
-  "version": "1.0.0-alpha.2",
+  "version": "1.0.0-beta.1",
   "private": true,
   "description": "Per-tab volume control with an optional 200% booster for Chromium browsers.",
   "license": "MIT",
