@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <title>Control Your Volume!</title>
+  <rect x="4" y="4" width="120" height="120" rx="28" fill="#0a0a0a"/>
+  <rect x="4.5" y="4.5" width="119" height="119" rx="27.5" fill="none" stroke="#ffffff" stroke-opacity="0.14"/>
+  <path d="M26 50h14l20-17v62L40 78H26z" fill="#ffffff"/>
+  <path d="M74 48a22 22 0 0 1 0 32" stroke="#ffffff" stroke-width="9" stroke-linecap="round" fill="none"/>
+  <path d="M87 35a40 40 0 0 1 0 58" stroke="#ffffff" stroke-opacity="0.55" stroke-width="9" stroke-linecap="round" fill="none"/>
+</svg>

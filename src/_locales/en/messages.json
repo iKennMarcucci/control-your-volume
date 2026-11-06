@@ -1,0 +1,162 @@
+{
+  "extName": {
+    "message": "Control Your Volume!"
+  },
+  "extDescription": {
+    "message": "Set the volume of each tab separately, with an optional boost up to 200%."
+  },
+  "cmdOpen": {
+    "message": "Open Control Your Volume!"
+  },
+  "cmdVolumeUp": {
+    "message": "Raise the current tab volume by 10%"
+  },
+  "cmdVolumeDown": {
+    "message": "Lower the current tab volume by 10%"
+  },
+  "cmdToggleMute": {
+    "message": "Mute or unmute the current tab"
+  },
+  "settings": {
+    "message": "Settings"
+  },
+  "back": {
+    "message": "Back"
+  },
+  "thisTab": {
+    "message": "This tab"
+  },
+  "playing": {
+    "message": "Playing audio"
+  },
+  "otherTabs": {
+    "message": "Other tabs"
+  },
+  "search": {
+    "message": "Search tabs"
+  },
+  "noResults": {
+    "message": "No tabs match “$VALUE$”",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "emptyPlaying": {
+    "message": "No other tab is playing audio"
+  },
+  "mute": {
+    "message": "Mute"
+  },
+  "unmute": {
+    "message": "Unmute"
+  },
+  "goToTab": {
+    "message": "Go to tab"
+  },
+  "volumeOf": {
+    "message": "Volume of $VALUE$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "percentValue": {
+    "message": "$VALUE$ percent",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "editVolume": {
+    "message": "Volume percentage"
+  },
+  "restricted": {
+    "message": "The browser doesn’t allow extensions to change the volume of this page."
+  },
+  "notInvoked": {
+    "message": "Open the extension on this tab once to control it."
+  },
+  "captureFailed": {
+    "message": "Couldn’t control this tab’s audio. Try again."
+  },
+  "windowN": {
+    "message": "Window $VALUE$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "pinned": {
+    "message": "Pinned"
+  },
+  "muted": {
+    "message": "Muted"
+  },
+  "incognito": {
+    "message": "Incognito"
+  },
+  "settingsBoost": {
+    "message": "Volume booster"
+  },
+  "settingsBoostHint": {
+    "message": "Lets you go up to 200%. High levels can distort audio and harm your hearing or speakers."
+  },
+  "settingsBadge": {
+    "message": "Show volume on icon"
+  },
+  "settingsBadgeHint": {
+    "message": "Displays the tab’s volume on the toolbar icon when it isn’t 100%."
+  },
+  "settingsTheme": {
+    "message": "Theme"
+  },
+  "themeSystem": {
+    "message": "System"
+  },
+  "themeLight": {
+    "message": "Light"
+  },
+  "themeDark": {
+    "message": "Dark"
+  },
+  "settingsShortcuts": {
+    "message": "Keyboard shortcuts"
+  },
+  "settingsShortcutsHint": {
+    "message": "Raise, lower or mute the current tab without opening the extension."
+  },
+  "customize": {
+    "message": "Customize"
+  },
+  "howItWorks": {
+    "message": "How it works"
+  },
+  "howItWorksHint": {
+    "message": "While a tab’s volume isn’t 100%, the browser shows that tab as shared. Back at 100%, it stops."
+  },
+  "resetAll": {
+    "message": "Reset all tabs to 100%"
+  },
+  "resetDone": {
+    "message": "All tabs are back to 100%"
+  },
+  "version": {
+    "message": "Version $VALUE$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "sourceCode": {
+    "message": "Source code"
+  },
+  "untitled": {
+    "message": "Untitled"
+  }
+}

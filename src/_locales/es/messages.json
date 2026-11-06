@@ -1,0 +1,162 @@
+{
+  "extName": {
+    "message": "Control Your Volume!"
+  },
+  "extDescription": {
+    "message": "Ajusta el volumen de cada pestaña por separado, con un amplificador opcional de hasta 200%."
+  },
+  "cmdOpen": {
+    "message": "Abrir Control Your Volume!"
+  },
+  "cmdVolumeUp": {
+    "message": "Subir 10% el volumen de la pestaña actual"
+  },
+  "cmdVolumeDown": {
+    "message": "Bajar 10% el volumen de la pestaña actual"
+  },
+  "cmdToggleMute": {
+    "message": "Silenciar o reactivar la pestaña actual"
+  },
+  "settings": {
+    "message": "Configuración"
+  },
+  "back": {
+    "message": "Volver"
+  },
+  "thisTab": {
+    "message": "Esta pestaña"
+  },
+  "playing": {
+    "message": "Con audio"
+  },
+  "otherTabs": {
+    "message": "Otras pestañas"
+  },
+  "search": {
+    "message": "Buscar pestañas"
+  },
+  "noResults": {
+    "message": "Ninguna pestaña coincide con “$VALUE$”",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "emptyPlaying": {
+    "message": "Ninguna otra pestaña está sonando"
+  },
+  "mute": {
+    "message": "Silenciar"
+  },
+  "unmute": {
+    "message": "Reactivar sonido"
+  },
+  "goToTab": {
+    "message": "Ir a la pestaña"
+  },
+  "volumeOf": {
+    "message": "Volumen de $VALUE$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "percentValue": {
+    "message": "$VALUE$ por ciento",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "editVolume": {
+    "message": "Porcentaje de volumen"
+  },
+  "restricted": {
+    "message": "El navegador no permite que las extensiones cambien el volumen de esta página."
+  },
+  "notInvoked": {
+    "message": "Abre la extensión en esta pestaña una vez para controlarla."
+  },
+  "captureFailed": {
+    "message": "No se pudo controlar el audio de esta pestaña. Inténtalo de nuevo."
+  },
+  "windowN": {
+    "message": "Ventana $VALUE$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "pinned": {
+    "message": "Fijada"
+  },
+  "muted": {
+    "message": "Silenciada"
+  },
+  "incognito": {
+    "message": "Incógnito"
+  },
+  "settingsBoost": {
+    "message": "Amplificador de volumen"
+  },
+  "settingsBoostHint": {
+    "message": "Permite subir hasta 200%. Los niveles altos pueden distorsionar el audio y dañar tus oídos o parlantes."
+  },
+  "settingsBadge": {
+    "message": "Mostrar volumen en el ícono"
+  },
+  "settingsBadgeHint": {
+    "message": "Muestra el volumen de la pestaña en el ícono cuando no está en 100%."
+  },
+  "settingsTheme": {
+    "message": "Tema"
+  },
+  "themeSystem": {
+    "message": "Sistema"
+  },
+  "themeLight": {
+    "message": "Claro"
+  },
+  "themeDark": {
+    "message": "Oscuro"
+  },
+  "settingsShortcuts": {
+    "message": "Atajos de teclado"
+  },
+  "settingsShortcutsHint": {
+    "message": "Sube, baja o silencia la pestaña actual sin abrir la extensión."
+  },
+  "customize": {
+    "message": "Personalizar"
+  },
+  "howItWorks": {
+    "message": "Cómo funciona"
+  },
+  "howItWorksHint": {
+    "message": "Mientras el volumen de una pestaña no esté en 100%, el navegador la muestra como compartida. Al volver a 100%, deja de hacerlo."
+  },
+  "resetAll": {
+    "message": "Restablecer todas a 100%"
+  },
+  "resetDone": {
+    "message": "Todas las pestañas volvieron a 100%"
+  },
+  "version": {
+    "message": "Versión $VALUE$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "sourceCode": {
+    "message": "Código fuente"
+  },
+  "untitled": {
+    "message": "Sin título"
+  }
+}

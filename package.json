@@ -1,0 +1,29 @@
+{
+  "name": "control-your-volume",
+  "version": "1.0.0-alpha.1",
+  "private": true,
+  "description": "Per-tab volume control with an optional 200% booster for Chromium browsers.",
+  "license": "MIT",
+  "type": "module",
+  "packageManager": "pnpm@12.10.1",
+  "scripts": {
+    "dev": "node scripts/build.mjs --watch",
+    "build": "node scripts/build.mjs",
+    "typecheck": "tsc --noEmit",
+    "check": "biome check .",
+    "format": "biome check --write .",
+    "test": "node --test \"tests/unit/**/*.test.ts\"",
+    "test:e2e": "node scripts/build.mjs && playwright test",
+    "version:sync": "node scripts/version.mjs",
+    "zip": "node scripts/zip.mjs"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.6.5",
+    "@playwright/test": "^1.64.1",
+    "@types/chrome": "^0.3.7",
+    "@types/node": "^26.6.6",
+    "esbuild": "^0.28.2",
+    "geist": "^1.9.1",
+    "typescript": "7.0.2"
+  }
+}
