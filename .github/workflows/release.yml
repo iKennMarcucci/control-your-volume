@@ -40,7 +40,7 @@ jobs:
         run: |
           awk -v v="${{ steps.version.outputs.version }}" '
             $0 ~ "^## \\[" v "\\]" { found = 1; next }
-            found && /^## \[/ { exit }
+            found && /^(## )?\[/ { exit }
             found { print }
           ' CHANGELOG.md > notes.md
           cat >> notes.md <<'MD'
