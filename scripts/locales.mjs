@@ -63,8 +63,8 @@ const strings = {
   incognito: ['Incognito', 'Incógnito'],
   settingsBoost: ['Volume booster', 'Amplificador de volumen'],
   settingsBoostHint: [
-    'Lets you go up to 200%. High levels can distort audio and harm your hearing or speakers.',
-    'Permite subir hasta 200%. Los niveles altos pueden distorsionar el audio y dañar tus oídos o parlantes.',
+    'Lets you go up to 200%, about twice as loud. Audio that’s already loud can only get a little louder without distorting. High levels can harm your hearing or speakers.',
+    'Permite subir hasta 200%, cerca del doble de volumen. El audio que ya suena fuerte solo puede subir un poco sin distorsionar. Los niveles altos pueden dañar tus oídos o parlantes.',
   ],
   settingsBadge: ['Show volume on icon', 'Mostrar volumen en el ícono'],
   settingsBadgeHint: [

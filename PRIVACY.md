@@ -5,7 +5,7 @@ _Last updated: 2026-11-06_
 Control Your Volume! does not collect, store, sell or send any personal data.
 
 - **Audio** from a tab is processed only in memory, inside your browser, to change its volume. It's never recorded, saved or sent anywhere.
-- **Tab titles, addresses and icons** are read only to show them in the popup. They never leave your device.
+- **Tab titles, addresses and icons** are read only to show them in the popup. They never leave your device. Icons come from the browser's own favicon cache, so opening the popup never contacts the sites you have open.
 - **Settings** (booster, badge, theme) are saved with `chrome.storage.sync`. If you turned on browser sync, your browser syncs them to your other devices.
 - **Per-tab volumes** live in `chrome.storage.session` and are cleared when the browser closes.
 - The extension makes **no network requests** and has no analytics.

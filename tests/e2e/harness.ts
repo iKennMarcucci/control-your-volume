@@ -59,6 +59,11 @@ function toneWav(): Buffer {
   return Buffer.concat([header, data]);
 }
 
+const ICON_PNG = Buffer.from(
+  'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==',
+  'base64',
+);
+
 export interface LaunchOptions {
   locale?: string;
   colorScheme?: 'light' | 'dark';
@@ -78,6 +83,20 @@ export async function launch(options: LaunchOptions = {}): Promise<Harness> {
   const wav = toneWav();
   const server: Server = createServer((req, res) => {
     const path = new URL(req.url ?? '/', 'http://x').pathname;
+    if (path === '/icon.png') {
+      res.writeHead(200, { 'content-type': 'image/png', 'cache-control': 'no-store' });
+      res.end(ICON_PNG);
+      return;
+    }
+    if (path === '/page') {
+      // A plain page with its own favicon, like most sites.
+      const title = new URL(req.url ?? '/', 'http://x').searchParams.get('title') ?? 'Page';
+      res.writeHead(200, { 'content-type': 'text/html' });
+      res.end(
+        `<!doctype html><html lang="en"><title>${title}</title><link rel="icon" href="/icon.png?t=${encodeURIComponent(title)}"><h1>${title}</h1></html>`,
+      );
+      return;
+    }
     if (path === '/tone.wav') {
       res.writeHead(200, { 'content-type': 'audio/wav', 'content-length': wav.length });
       res.end(wav);
@@ -126,9 +145,10 @@ export async function openTone(
   h: Harness,
   title: string,
   hz = 440,
+  amp = 0.25,
 ): Promise<{ page: Page; tabId: number }> {
   const page = await h.context.newPage();
-  await page.goto(`${h.baseUrl}/?title=${encodeURIComponent(title)}&hz=${hz}`);
+  await page.goto(`${h.baseUrl}/?title=${encodeURIComponent(title)}&hz=${hz}&amp=${amp}`);
   await page.evaluate(() =>
     (window as unknown as { resumeAudio: () => Promise<void> }).resumeAudio(),
   );
@@ -167,6 +187,7 @@ export interface Stats {
   gain: number;
   limiter: boolean;
   rms: number;
+  peak: number;
 }
 
 /** Reads the processed level of every captured tab from the offscreen document. */

@@ -39,11 +39,18 @@ Open YouTube (or any video), Spotify Web or SoundCloud, and a third site with au
 - [ ] Mute works on free-control tabs.
 - [ ] Turn free control off. Those tabs go back to 100% and the browser removes the site access.
 
+## Speed
+
+- [ ] With 30+ tabs open, the popup appears as soon as you click the icon. Try it several times, also after not using the browser for a few minutes.
+- [ ] If it ever takes more than a second, note the browser version and OS, and whether other extensions' popups are slow too at that moment.
+
 ## Booster
 
 - [ ] By default the slider stops at 100% and typing `150` gives 100.
 - [ ] Turn on **Volume booster** in Settings. The slider goes to 200% and shows a tick at 100%.
-- [ ] At 150–200% the audio is louder, the slider and value turn amber, and loud music doesn't crackle badly.
+- [ ] At 150–200% the audio is louder and the slider and value turn amber. On a quiet video or a voice, 200% sounds about twice as loud.
+- [ ] Loud music at 200% is a bit louder and never crackles or distorts.
+- [ ] 50% sounds clearly half as loud as 100%, and 25% about a quarter.
 - [ ] Turn the booster off. Every boosted tab drops back to 100%.
 
 ## Mute, badge, shortcuts

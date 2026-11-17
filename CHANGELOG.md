@@ -5,6 +5,17 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+### Changed
+
+- Volume now follows perceived loudness: 50% sounds half as loud (-10 dB) and 200% about twice as loud (+10 dB). Before, 50% only lowered the signal by 6 dB and 200% raised it by 6 dB, which most people hear as about two thirds and barely louder.
+- New limiter above 100%, shared by both engines. It never clips, it never makes a tab quieter than at 100%, and free control now uses it too (before, boosting a `<video>`/`<audio>` had no limiter).
+
+### Fixed
+
+- The popup could take a long time to open. It loaded each tab's icon from the site itself, a network request per open tab every time. Icons now come from the browser's cache, all startup data loads in one parallel step, and a test keeps the popup under 400 ms with 60 tabs and no network requests.
+- A tab that started playing while the popup was opening could stay under **Other tabs**.
+- The popup kept stale rows if the browser paused animation frames.
+
 ## [1.0.0-beta.1] - 2026-11-06
 
 First beta. Same features as 1.0.0-alpha.2.
