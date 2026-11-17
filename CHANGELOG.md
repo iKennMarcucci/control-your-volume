@@ -5,6 +5,8 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+## [1.0.0-beta.2] - 2026-11-17
+
 ### Changed
 
 - Volume now follows perceived loudness: 50% sounds half as loud (-10 dB) and 200% about twice as loud (+10 dB). Before, 50% only lowered the signal by 6 dB and 200% raised it by 6 dB, which most people hear as about two thirds and barely louder.
@@ -53,7 +55,8 @@ First public alpha.
 - English and Spanish.
 - Capture is released automatically when a tab goes back to 100%.
 
-[Unreleased]: https://github.com/iKennMarcucci/control-your-volume/compare/v1.0.0-beta.1...HEAD
+[Unreleased]: https://github.com/iKennMarcucci/control-your-volume/compare/v1.0.0-beta.2...HEAD
+[1.0.0-beta.2]: https://github.com/iKennMarcucci/control-your-volume/compare/v1.0.0-beta.1...v1.0.0-beta.2
 [1.0.0-beta.1]: https://github.com/iKennMarcucci/control-your-volume/compare/v1.0.0-alpha.2...v1.0.0-beta.1
 [1.0.0-alpha.2]: https://github.com/iKennMarcucci/control-your-volume/compare/v1.0.0-alpha.1...v1.0.0-alpha.2
 [1.0.0-alpha.1]: https://github.com/iKennMarcucci/control-your-volume/releases/tag/v1.0.0-alpha.1
