@@ -4,6 +4,8 @@ import {
   badgeText,
   clampVolume,
   isBoosted,
+  LIMITER_FLOOR_DB,
+  limiterThreshold,
   maxVolume,
   parseVolumeInput,
   stepVolume,
@@ -62,11 +64,26 @@ describe('stepVolume', () => {
 });
 
 describe('gain and badge', () => {
-  it('maps percent to linear gain', () => {
+  const db = (gain: number) => 20 * Math.log10(gain);
+  it('maps percent to perceived loudness: half is -10 dB, double is +10 dB', () => {
     assert.equal(volumeToGain(100), 1);
-    assert.equal(volumeToGain(50), 0.5);
-    assert.equal(volumeToGain(200), 2);
+    assert.ok(Math.abs(db(volumeToGain(50)) - -10) < 1e-9);
+    assert.ok(Math.abs(db(volumeToGain(200)) - 10) < 1e-9);
+    assert.ok(Math.abs(db(volumeToGain(25)) - -20) < 1e-9);
+    assert.equal(volumeToGain(0), 0);
     assert.equal(volumeToGain(-1), 0);
+  });
+  it('gets louder with every step', () => {
+    for (let v = 1; v <= 200; v++) assert.ok(volumeToGain(v) > volumeToGain(v - 1), `at ${v}`);
+  });
+  it('limits more as the boost grows, down to the floor', () => {
+    assert.equal(limiterThreshold(100), -0);
+    assert.ok(limiterThreshold(101) > -0.2, 'barely limits a tiny boost');
+    assert.equal(limiterThreshold(200), LIMITER_FLOOR_DB);
+    for (let v = 101; v <= 200; v++) {
+      assert.ok(limiterThreshold(v) <= limiterThreshold(v - 1), `at ${v}`);
+      assert.ok(limiterThreshold(v) >= LIMITER_FLOOR_DB, `at ${v}`);
+    }
   });
   it('flags boosted volumes', () => {
     assert.equal(isBoosted(100), false);

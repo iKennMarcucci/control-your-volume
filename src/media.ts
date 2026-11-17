@@ -7,7 +7,9 @@
  *   and the result reports `limited`.
  * Injected into every frame and safe to inject again: the first copy stays in charge.
  */
+import { type BoostStage, createBoostStage } from './lib/audio.ts';
 import type { MediaResult } from './lib/messages.ts';
+import { volumeToGain } from './lib/volume.ts';
 
 if (!globalThis.__cyvMedia) {
   let target = 100;
@@ -15,7 +17,7 @@ if (!globalThis.__cyvMedia) {
   const base = new WeakMap<HTMLMediaElement, number>();
   /** The volume we last wrote, to tell our own changes apart from the site's. */
   const written = new WeakMap<HTMLMediaElement, number>();
-  const gains = new WeakMap<HTMLMediaElement, GainNode>();
+  const gains = new WeakMap<HTMLMediaElement, { gain: GainNode; boost: BoostStage }>();
   let context: AudioContext | null = null;
   let contextReady = false;
 
@@ -56,20 +58,24 @@ if (!globalThis.__cyvMedia) {
   const apply = (el: HTMLMediaElement): boolean => {
     if (!base.has(el)) base.set(el, el.volume);
     const own = base.get(el) ?? 1;
-    const factor = target / 100;
-    let gain = gains.get(el);
-    if (!gain && factor > 1 && context && contextReady && readable(el)) {
+    const factor = volumeToGain(target);
+    let routed = gains.get(el);
+    if (!routed && factor > 1 && context && contextReady && readable(el)) {
       try {
-        gain = context.createGain();
-        context.createMediaElementSource(el).connect(gain).connect(context.destination);
-        gains.set(el, gain);
+        const gain = context.createGain();
+        const boost = createBoostStage(context);
+        context.createMediaElementSource(el).connect(gain).connect(boost.input);
+        boost.output.connect(context.destination);
+        routed = { gain, boost };
+        gains.set(el, routed);
       } catch {
-        gain = undefined;
+        routed = undefined;
       }
     }
-    if (gain) {
+    if (routed) {
       write(el, own);
-      gain.gain.value = factor;
+      routed.gain.gain.value = factor;
+      routed.boost.setVolume(target);
       return false;
     }
     write(el, own * Math.min(factor, 1));

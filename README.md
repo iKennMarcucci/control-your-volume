@@ -16,8 +16,8 @@
 
 ## Features
 
-- **Volume per tab** from 0% to 100%, independent of every other tab.
-- **Optional booster up to 200%**. Turn it on in Settings. Above 100% the slider turns amber and a limiter keeps loud passages from clipping.
+- **Volume per tab** from 0% to 100%, independent of every other tab. Percentages follow how loud things sound, not the raw signal: 50% sounds half as loud (-10 dB) and 25% a quarter (-20 dB).
+- **Optional booster up to 200%**, about twice as loud (+10 dB). Turn it on in Settings. Above 100% the slider turns amber, and a limiter plus a soft clipper keep the sound from ever clipping. Audio that's already loud (most music) can only get a few dB louder without distorting; quiet videos and voices get the full boost.
 - **Know which tab is which**: favicon, title, site, window number, pinned/muted/incognito tags and a live "playing" indicator.
 - **The tab you're on** is always pinned at the top. Tabs playing audio come next, then everything else. Search appears when you have many tabs.
 - **Keyboard first**: arrows step 1%, <kbd>Shift</kbd> + arrows step 10%, type an exact value, double-click the slider to reset to 100%.
@@ -25,7 +25,7 @@
 - **Badge** on the toolbar icon with the current tab's volume when it isn't 100%.
 - **English and Spanish**, light/dark/system themes. Built on Vercel's [Geist](https://vercel.com/geist) design language.
 - **Free control (optional)**: adjust tabs you never opened the extension on. Turn on **Control tabs without visiting them** in Settings.
-- **Private**: no network requests and no analytics. Site access is only requested if you turn on free control. See [PRIVACY.md](PRIVACY.md).
+- **Fast and private**: the popup opens in a few milliseconds even with dozens of tabs. Tab icons come from the browser's own cache, so the extension never contacts the sites you have open. No analytics. Site access is only requested if you turn on free control. See [PRIVACY.md](PRIVACY.md).
 
 ## Install
 

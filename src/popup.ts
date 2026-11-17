@@ -16,8 +16,8 @@ import {
   fallbackLetter,
   groupTabs,
   isRestrictedUrl,
+  localFavicon,
   matchesQuery,
-  safeFavicon,
   windowNumbers,
 } from './lib/tabs.ts';
 import {
@@ -54,6 +54,8 @@ let query = '';
 let othersOpen = false;
 /** Rows that failed to capture in this popup session, with the reason. */
 const failures = new Map<number, RowState>();
+/** False until the first data arrives; events before that only queue a fresh reload. */
+let initialized = false;
 /** Whether the user allowed site access, which lets us control tabs they never visited. */
 let siteAccess = false;
 const ALL_SITES: chrome.permissions.Permissions = { origins: ['<all_urls>'] };
@@ -313,12 +315,7 @@ function updateRow(row: Row, tab: Tab, windowLabel: string | null): void {
   row.host.textContent = host;
   row.host.title = tab.url ?? '';
 
-  // Favicon: the tab's own icon when it's a web or data URL, otherwise Chrome's cached favicon.
-  const favicon =
-    safeFavicon(tab.favIconUrl) ??
-    (tab.url && /^https?:/.test(tab.url)
-      ? `/_favicon/?pageUrl=${encodeURIComponent(tab.url)}&size=32`
-      : null);
+  const favicon = localFavicon(tab);
   if (favicon !== row.faviconSrc) {
     row.faviconSrc = favicon;
     row.img.hidden = !favicon;
@@ -396,16 +393,27 @@ function syncList(list: HTMLElement, items: Row[]): void {
 // ---------------------------------------------------------------------------
 let renderQueued = false;
 
+/**
+ * Coalesces updates into one render on the next frame. Animation frames can stall (popup not
+ * shown yet, display asleep), so a timer guarantees the render happens anyway.
+ */
 function scheduleRender(): void {
   if (renderQueued) return;
   renderQueued = true;
-  requestAnimationFrame(() => {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const frame = requestAnimationFrame(() => run());
+  const run = () => {
+    if (!renderQueued) return;
     renderQueued = false;
+    cancelAnimationFrame(frame);
+    clearTimeout(timer);
     render();
-  });
+  };
+  timer = setTimeout(run, 50);
 }
 
 function render(): void {
+  if (!initialized) return;
   // Never rebuild under a dragging pointer; the drag end triggers a new render.
   if ([...rows.values()].some((r) => r.dragging)) return;
 
@@ -469,7 +477,11 @@ function render(): void {
 // Data loading and live updates
 // ---------------------------------------------------------------------------
 async function reloadTabs(): Promise<void> {
-  const all = await chrome.tabs.query({});
+  setTabs(await chrome.tabs.query({}));
+  scheduleRender();
+}
+
+function setTabs(all: chrome.tabs.Tab[]): void {
   // Our own pages (e.g. the popup opened as a tab) are never worth listing.
   tabs = all.filter(
     (tab): tab is Tab =>
@@ -477,7 +489,6 @@ async function reloadTabs(): Promise<void> {
       tab.id !== chrome.tabs.TAB_ID_NONE &&
       !(tab.url ?? tab.pendingUrl ?? '').startsWith(OWN_PAGES),
   );
-  scheduleRender();
 }
 
 let reloadTimer: ReturnType<typeof setTimeout> | undefined;
@@ -563,6 +574,7 @@ function setSiteAccess(granted: boolean): void {
 }
 
 function syncSettingsForm(): void {
+  if (!initialized) return;
   for (const [id, on] of [
     ['setting-boost', settings.boost],
     ['setting-badge', settings.badge],
@@ -642,14 +654,19 @@ function bindSettings(): void {
 async function main(): Promise<void> {
   document.documentElement.lang = chrome.i18n.getUILanguage();
   localize(document);
+  // Listen before reading: a tab that starts playing while we read must not be missed.
+  watchTabs();
 
-  const [settingsValue, states, invokedValue, [active], access] = await Promise.all([
+  // Everything the first render needs, in one round of parallel calls.
+  const [settingsValue, states, invokedValue, [active], access, allTabs] = await Promise.all([
     getSettings(),
     getTabStates(),
     getInvokedTabs(),
     chrome.tabs.query({ active: true, currentWindow: true }),
     chrome.permissions.contains(ALL_SITES).catch(() => false),
+    chrome.tabs.query({}),
   ]);
+  setTabs(allTabs);
   settings = settingsValue;
   siteAccess = access;
   tabStates = states;
@@ -657,6 +674,7 @@ async function main(): Promise<void> {
   // `?tab=<id>` lets tests and screenshots open the popup as a page for a given tab.
   const forced = Number(new URLSearchParams(location.search).get('tab'));
   currentTabId = Number.isInteger(forced) && forced > 0 ? forced : active?.id;
+  initialized = true;
   applyTheme(settings.theme);
   syncSettingsForm();
 
@@ -682,9 +700,9 @@ async function main(): Promise<void> {
     }
   });
 
-  watchTabs();
-  await reloadTabs();
   render();
+  // Lets tests check how fast the popup is usable.
+  performance.mark('cyv:ready');
 }
 
 void main();

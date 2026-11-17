@@ -35,6 +35,8 @@ export interface ChainStats {
   muted: boolean;
   /** Root mean square of the processed signal, 0..1. */
   rms: number;
+  /** Highest absolute sample in the last analysis window; above 1 would clip. */
+  peak: number;
   context: AudioContextState;
 }
 

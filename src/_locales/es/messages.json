@@ -119,7 +119,7 @@
     "message": "Amplificador de volumen"
   },
   "settingsBoostHint": {
-    "message": "Permite subir hasta 200%. Los niveles altos pueden distorsionar el audio y dañar tus oídos o parlantes."
+    "message": "Permite subir hasta 200%, cerca del doble de volumen. El audio que ya suena fuerte solo puede subir un poco sin distorsionar. Los niveles altos pueden dañar tus oídos o parlantes."
   },
   "settingsBadge": {
     "message": "Mostrar volumen en el ícono"

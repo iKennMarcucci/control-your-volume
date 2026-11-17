@@ -119,7 +119,7 @@
     "message": "Volume booster"
   },
   "settingsBoostHint": {
-    "message": "Lets you go up to 200%. High levels can distort audio and harm your hearing or speakers."
+    "message": "Lets you go up to 200%, about twice as loud. Audio that’s already loud can only get a little louder without distorting. High levels can harm your hearing or speakers."
   },
   "settingsBadge": {
     "message": "Show volume on icon"

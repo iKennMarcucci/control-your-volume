@@ -36,9 +36,30 @@ export function stepVolume(
   return clampVolume(snapped, boost);
 }
 
-/** Linear gain applied to the Web Audio GainNode. */
+/**
+ * The percentage is perceived loudness, not amplitude: people hear +10 dB as twice as loud and
+ * -10 dB as half as loud. So 50% is -10 dB and 200% is +10 dB, which makes gain = (v/100)^1.66.
+ * (A plain linear gain makes 50% sound like about two thirds and 200% barely louder.)
+ */
+export const LOUDNESS_EXPONENT = Math.log2(10) / 2;
+
+/** Amplitude gain for a volume percentage. */
 export function volumeToGain(volume: number): number {
-  return Math.max(0, volume) / 100;
+  return (Math.max(0, volume) / 100) ** LOUDNESS_EXPONENT;
+}
+
+/** Lowest threshold of the limiter used above 100%, in dB. */
+export const LIMITER_FLOOR_DB = -1.5;
+export const LIMITER_RATIO = 20;
+
+/**
+ * Limiter threshold for a boosted volume. It follows the boost down to -1.5 dB, so a small boost
+ * only limits a little and the level never drops when going from 100% to 101%. Chromium's
+ * compressor adds its own makeup gain on top; the soft clipper after it keeps peaks below 1.0.
+ */
+export function limiterThreshold(volume: number): number {
+  const boostDb = 20 * Math.log10(Math.max(volumeToGain(volume), 1));
+  return -Math.min(-LIMITER_FLOOR_DB, boostDb);
 }
 
 export function isBoosted(volume: number): boolean {

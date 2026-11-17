@@ -68,10 +68,17 @@ export function displayHost(url: string | undefined): string {
   }
 }
 
-/** Favicons the popup may load. chrome:// favicons fail inside extension pages, so skip them. */
-export function safeFavicon(url: string | undefined): string | null {
-  if (!url) return null;
-  return /^(https?:|data:image\/)/.test(url) ? url : null;
+/**
+ * Favicon for the popup, always from the browser itself: an inline data: URL, or the browser's
+ * favicon cache through the `_favicon` API. Never the site's own icon URL: fetching it would be a
+ * network request to every site you have open, and a slow one could hold the popup back.
+ */
+export function localFavicon(tab: Pick<TabLike, 'favIconUrl' | 'url'>): string | null {
+  if (tab.favIconUrl?.startsWith('data:image/')) return tab.favIconUrl;
+  if (tab.url && /^https?:/.test(tab.url)) {
+    return `/_favicon/?pageUrl=${encodeURIComponent(tab.url)}&size=32`;
+  }
+  return null;
 }
 
 /** Letter used when a tab has no usable favicon. */

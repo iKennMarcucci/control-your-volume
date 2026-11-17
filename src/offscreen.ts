@@ -1,15 +1,16 @@
+import { type BoostStage, createBoostStage } from './lib/audio.ts';
 import type { ChainStats, OffscreenRequest, OffscreenResult } from './lib/messages.ts';
 import { isBoosted, volumeToGain } from './lib/volume.ts';
 
 /**
  * One audio graph per captured tab:
- *   MediaStreamSource → GainNode → (DynamicsCompressor as limiter, only above 100%) → speakers
+ *   MediaStreamSource → GainNode → (boost stage: limiter + soft clipper, only above 100%) → speakers
  */
 interface Chain {
   stream: MediaStream;
   source: MediaStreamAudioSourceNode;
   gain: GainNode;
-  limiter: DynamicsCompressorNode;
+  boost: BoostStage;
   limiterOn: boolean;
   analyser: AnalyserNode | null;
   volume: number;
@@ -30,15 +31,15 @@ function audioContext(): AudioContext {
 }
 
 function output(chain: Chain): AudioNode {
-  return chain.limiterOn ? chain.limiter : chain.gain;
+  return chain.limiterOn ? chain.boost.output : chain.gain;
 }
 
 function wire(chain: Chain, limiterOn: boolean): void {
   const ctx = audioContext();
   chain.gain.disconnect();
-  chain.limiter.disconnect();
+  chain.boost.output.disconnect();
   chain.limiterOn = limiterOn;
-  if (limiterOn) chain.gain.connect(chain.limiter);
+  if (limiterOn) chain.gain.connect(chain.boost.input);
   output(chain).connect(ctx.destination);
   if (chain.analyser) output(chain).connect(chain.analyser);
 }
@@ -51,6 +52,7 @@ function applyGain(chain: Chain): void {
   const ctx = audioContext();
   // Short ramp avoids clicks ("zipper noise") while dragging the slider.
   chain.gain.gain.setTargetAtTime(targetGain(chain), ctx.currentTime, 0.015);
+  chain.boost.setVolume(chain.volume);
   const boosted = isBoosted(chain.volume);
   if (boosted !== chain.limiterOn) wire(chain, boosted);
 }
@@ -68,24 +70,18 @@ async function start(
   } as unknown as MediaStreamConstraints);
 
   const ctx = audioContext();
-  const limiter = ctx.createDynamicsCompressor();
-  limiter.threshold.value = -3;
-  limiter.knee.value = 3;
-  limiter.ratio.value = 20;
-  limiter.attack.value = 0.002;
-  limiter.release.value = 0.2;
-
   const chain: Chain = {
     stream,
     source: ctx.createMediaStreamSource(stream),
     gain: ctx.createGain(),
-    limiter,
+    boost: createBoostStage(ctx),
     limiterOn: false,
     analyser: null,
     volume,
     muted,
   };
   chain.gain.gain.value = targetGain(chain);
+  chain.boost.setVolume(volume);
   chain.source.connect(chain.gain);
   wire(chain, isBoosted(volume));
   // Never leave an older graph for this tab playing where no message can reach it.
@@ -108,7 +104,7 @@ function stop(tabId: number): void {
   for (const track of chain.stream.getTracks()) track.stop();
   chain.source.disconnect();
   chain.gain.disconnect();
-  chain.limiter.disconnect();
+  chain.boost.disconnect();
   chain.analyser?.disconnect();
 }
 
@@ -122,13 +118,18 @@ function stats(): ChainStats[] {
     const samples = new Float32Array(chain.analyser.fftSize);
     chain.analyser.getFloatTimeDomainData(samples);
     let sum = 0;
-    for (const s of samples) sum += s * s;
+    let peak = 0;
+    for (const s of samples) {
+      sum += s * s;
+      peak = Math.max(peak, Math.abs(s));
+    }
     return {
       tabId,
       gain: chain.gain.gain.value,
       limiter: chain.limiterOn,
       muted: chain.muted,
       rms: Math.sqrt(sum / samples.length),
+      peak,
       context: audioContext().state,
     };
   });

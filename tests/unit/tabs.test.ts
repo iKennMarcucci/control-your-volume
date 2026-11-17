@@ -5,8 +5,8 @@ import {
   fallbackLetter,
   groupTabs,
   isRestrictedUrl,
+  localFavicon,
   matchesQuery,
-  safeFavicon,
   type TabLike,
   windowNumbers,
 } from '../../src/lib/tabs.ts';
@@ -63,11 +63,21 @@ describe('displayHost', () => {
 });
 
 describe('favicons', () => {
-  it('only trusts http(s) and data images', () => {
-    assert.equal(safeFavicon('https://a.com/f.ico'), 'https://a.com/f.ico');
-    assert.equal(safeFavicon('data:image/png;base64,AA'), 'data:image/png;base64,AA');
-    assert.equal(safeFavicon('chrome://favicon/x'), null);
-    assert.equal(safeFavicon(undefined), null);
+  it('only uses icons the browser already has', () => {
+    // Never the site's own icon URL: that would be a network request from the popup.
+    assert.equal(
+      localFavicon({ url: 'https://a.com/x?y=1', favIconUrl: 'https://a.com/f.ico' }),
+      '/_favicon/?pageUrl=https%3A%2F%2Fa.com%2Fx%3Fy%3D1&size=32',
+    );
+    assert.equal(
+      localFavicon({ url: 'https://a.com', favIconUrl: 'data:image/png;base64,AA' }),
+      'data:image/png;base64,AA',
+    );
+    assert.equal(
+      localFavicon({ url: 'chrome://settings', favIconUrl: 'chrome://favicon/x' }),
+      null,
+    );
+    assert.equal(localFavicon({ url: undefined }), null);
   });
   it('builds a fallback letter', () => {
     assert.equal(fallbackLetter({ url: 'https://www.spotify.com' }), 'S');

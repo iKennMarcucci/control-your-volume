@@ -1,4 +1,5 @@
-import { expect, test } from '@playwright/test';
+import { expect, type Page, test } from '@playwright/test';
+import { volumeToGain } from '../../src/lib/volume.ts';
 import {
   type Harness,
   launch,
@@ -35,11 +36,12 @@ test('lowers one tab without touching another', async () => {
   await expect.poll(async () => (await tabStates(h))[a.tabId]?.volume).toBe(25);
   const [chain] = await stats(popup);
   expect(chain?.tabId).toBe(a.tabId);
-  expect(chain?.gain).toBeCloseTo(0.25, 2);
+  // 25% is a quarter of the loudness: -20 dB, a gain of 0.1.
+  expect(chain?.gain).toBeCloseTo(0.1, 3);
   expect(chain?.limiter).toBe(false);
-  // Source tone is 0.25 amplitude → RMS ≈ 0.177; at 25% it should be ≈ 0.044.
-  expect(chain?.rms).toBeGreaterThan(0.02);
-  expect(chain?.rms).toBeLessThan(0.07);
+  // Source tone is 0.25 amplitude → RMS ≈ 0.177; at 25% it should be ≈ 0.018.
+  expect(chain?.rms).toBeGreaterThan(0.012);
+  expect(chain?.rms).toBeLessThan(0.025);
   expect((await tabStates(h))[b.tabId]).toBeUndefined();
 });
 
@@ -81,7 +83,7 @@ test('booster is off by default, allows 200% when enabled and clamps when disabl
   await expect.poll(async () => (await tabStates(h))[a.tabId]?.volume).toBe(150);
   await expect(row).toHaveAttribute('data-boosted', 'true');
   const [boosted] = await stats(popup);
-  expect(boosted?.gain).toBeCloseTo(1.5, 2);
+  expect(boosted?.gain).toBeCloseTo(volumeToGain(150), 3);
   expect(boosted?.limiter).toBe(true);
 
   await popup.click('#open-settings');
@@ -215,4 +217,57 @@ test('a tab muted before its volume changes stays silent', async () => {
   await input.press('Enter');
   await expect.poll(async () => (await stats(popup)).length).toBe(1);
   await expect.poll(async () => (await stats(popup))[0]?.rms ?? 1).toBeLessThan(0.002);
+});
+
+const SINE_RMS = Math.SQRT1_2;
+const db = (ratio: number) => 20 * Math.log10(ratio);
+
+async function enableBoost(h: Harness): Promise<void> {
+  await h.worker.evaluate(() =>
+    chrome.storage.sync.set({ settings: { boost: true, badge: true, theme: 'system' } }),
+  );
+}
+
+async function setVolume(popup: Page, tabId: number, volume: number): Promise<void> {
+  const input = popup.locator(`${rowOf(tabId)} .value-input`);
+  await input.fill(String(volume));
+  await input.press('Enter');
+}
+
+test('50% sounds half as loud (-10 dB) and 200% twice as loud (+10 dB)', async () => {
+  const a = await openTone(h, 'Tone A', 440, 0.25);
+  await markInvoked(h, [a.tabId]);
+  await enableBoost(h);
+  const popup = await openPopup(h, a.tabId);
+  const source = 0.25 * SINE_RMS;
+
+  await setVolume(popup, a.tabId, 50);
+  await expect
+    .poll(async () => db(((await stats(popup))[0]?.rms ?? 0) / source))
+    .toBeCloseTo(-10, 0);
+
+  await setVolume(popup, a.tabId, 200);
+  await expect.poll(async () => (await stats(popup))[0]?.limiter).toBe(true);
+  const [boosted] = await stats(popup);
+  // +10 dB, plus up to ~1 dB of makeup gain from the limiter.
+  expect(db((boosted?.rms ?? 0) / source)).toBeGreaterThan(9.5);
+  expect(db((boosted?.rms ?? 0) / source)).toBeLessThan(11.5);
+  expect(boosted?.peak).toBeLessThan(1);
+});
+
+test('boosting audio that is already loud never clips and never gets quieter', async () => {
+  const a = await openTone(h, 'Loud tone', 440, 0.9);
+  await markInvoked(h, [a.tabId]);
+  await enableBoost(h);
+  const popup = await openPopup(h, a.tabId);
+  const source = 0.9 * SINE_RMS;
+
+  for (const volume of [101, 150, 200]) {
+    await setVolume(popup, a.tabId, volume);
+    await expect.poll(async () => (await tabStates(h))[a.tabId]?.volume).toBe(volume);
+    await popup.waitForTimeout(300);
+    const [chain] = await stats(popup);
+    expect(chain?.peak, `peak at ${volume}%`).toBeLessThan(1);
+    expect(db((chain?.rms ?? 0) / source), `level at ${volume}%`).toBeGreaterThan(-0.3);
+  }
 });

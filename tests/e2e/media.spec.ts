@@ -3,6 +3,7 @@
  * <video>/<audio> elements. These run like a real user (no capture allowlist).
  */
 import { expect, type Page, test } from '@playwright/test';
+import { volumeToGain } from '../../src/lib/volume.ts';
 import { type Harness, launch, msg, openMedia, openPopup, openTone, tabStates } from './harness.ts';
 
 const rowOf = (tabId: number) => `.row[data-tab-id="${tabId}"]`;
@@ -30,7 +31,7 @@ test.describe('with site access', () => {
     await expect(row).toHaveAttribute('data-state', 'ready');
 
     await setVolume(popup, music.tabId, 50);
-    await expect.poll(music.volume).toBeCloseTo(0.5, 2);
+    await expect.poll(music.volume).toBeCloseTo(volumeToGain(50), 2);
     await expect
       .poll(async () => (await tabStates(h))[music.tabId])
       .toMatchObject({
@@ -43,11 +44,11 @@ test.describe('with site access', () => {
     await music.page.evaluate(() => {
       (document.querySelector('audio') as HTMLAudioElement).volume = 0.8;
     });
-    await expect.poll(music.volume).toBeCloseTo(0.4, 2);
+    await expect.poll(music.volume).toBeCloseTo(0.8 * volumeToGain(50), 2);
 
     // A new page in the same tab gets the tab's level again.
     await music.page.reload();
-    await expect.poll(music.volume).toBeCloseTo(0.5, 2);
+    await expect.poll(music.volume).toBeCloseTo(volumeToGain(50), 2);
 
     await setVolume(popup, music.tabId, 100);
     await expect.poll(music.volume).toBeCloseTo(1, 2);
@@ -83,7 +84,7 @@ test.describe('with site access', () => {
 
     // Lowering a cross-origin tab still works through the element's volume.
     await setVolume(popup, cross.tabId, 30);
-    await expect.poll(cross.volume).toBeCloseTo(0.3, 2);
+    await expect.poll(cross.volume).toBeCloseTo(volumeToGain(30), 2);
     await expect(hint).toBeHidden();
   });
 
@@ -103,7 +104,7 @@ test.describe('with site access', () => {
     const popup = await openPopup(h, current.tabId);
 
     await setVolume(popup, music.tabId, 20);
-    await expect.poll(music.volume).toBeCloseTo(0.2, 2);
+    await expect.poll(music.volume).toBeCloseTo(volumeToGain(20), 2);
     await popup.evaluate(() =>
       chrome.runtime.sendMessage({ target: 'background', type: 'release-media' }),
     );
