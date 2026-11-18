@@ -7,8 +7,8 @@ const p1 = { placeholders: { value: { content: '$1' } } };
 const strings = {
   extName: ['Control Your Volume!', 'Control Your Volume!'],
   extDescription: [
-    'Set the volume of each tab separately, with an optional boost up to 200%.',
-    'Ajusta el volumen de cada pestaña por separado, con un amplificador opcional de hasta 200%.',
+    'Set the volume of each tab separately, with an optional boost up to 400%.',
+    'Ajusta el volumen de cada pestaña por separado, con un amplificador opcional de hasta 400%.',
   ],
   cmdOpen: ['Open Control Your Volume!', 'Abrir Control Your Volume!'],
   cmdVolumeUp: ['Raise the current tab volume by 10%', 'Subir 10% el volumen de la pestaña actual'],
@@ -44,6 +44,10 @@ const strings = {
     'This site can’t go above 100% from here. Open the extension on this tab to boost it.',
     'Este sitio no puede pasar de 100% desde aquí. Abre la extensión en esta pestaña para amplificarlo.',
   ],
+  compressedBoost: [
+    'Above 200% the sound is compressed so it doesn’t distort. It may sound flatter.',
+    'Por encima de 200% el sonido se comprime para no distorsionar. Puede sonar más plano.',
+  ],
   noMedia: [
     'No video or audio found on this page. If nothing changes, open the extension on this tab.',
     'No se encontró video ni audio en esta página. Si no cambia, abre la extensión en esta pestaña.',
@@ -63,8 +67,8 @@ const strings = {
   incognito: ['Incognito', 'Incógnito'],
   settingsBoost: ['Volume booster', 'Amplificador de volumen'],
   settingsBoostHint: [
-    'Lets you go up to 200%, about twice as loud. Audio that’s already loud can only get a little louder without distorting. High levels can harm your hearing or speakers.',
-    'Permite subir hasta 200%, cerca del doble de volumen. El audio que ya suena fuerte solo puede subir un poco sin distorsionar. Los niveles altos pueden dañar tus oídos o parlantes.',
+    'Lets you go up to 400%. Quiet audio sounds twice as loud at 200%; voices in calls and music, which are already loud, need up to 400% and get compressed to avoid distortion. High levels can harm your hearing or speakers.',
+    'Permite subir hasta 400%. El audio bajo suena el doble de fuerte a 200%; las voces de llamadas y la música, que ya vienen fuertes, necesitan hasta 400% y se comprimen para no distorsionar. Los niveles altos pueden dañar tus oídos o parlantes.',
   ],
   settingsBadge: ['Show volume on icon', 'Mostrar volumen en el ícono'],
   settingsBadgeHint: [

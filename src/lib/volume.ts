@@ -1,12 +1,38 @@
-/** Volume is expressed as an integer percentage: 0 = silent, 100 = original, 200 = max boost. */
+/** Volume is expressed as an integer percentage: 0 = silent, 100 = original, 400 = max boost. */
 export const DEFAULT_VOLUME = 100;
 export const MAX_VOLUME = 100;
-export const MAX_BOOSTED_VOLUME = 200;
+export const MAX_BOOSTED_VOLUME = 400;
+/**
+ * Above this level the extra loudness comes mostly from compression: audio that's already loud
+ * (voices in a call, music) is close to full scale, so the peaks are squeezed to let the rest rise.
+ */
+export const COMPRESSED_FROM = 200;
 export const SMALL_STEP = 1;
 export const LARGE_STEP = 10;
 
 export function maxVolume(boost: boolean): number {
   return boost ? MAX_BOOSTED_VOLUME : MAX_VOLUME;
+}
+
+/**
+ * Slider positions. 0–100% always takes the same room (1% per step); with the booster on, the
+ * boost range 100–400% takes an equal second half (3% per step), so normal levels stay precise.
+ */
+const BOOST_SPAN = 100;
+const BOOST_PER_STEP = (MAX_BOOSTED_VOLUME - MAX_VOLUME) / BOOST_SPAN;
+
+export function sliderMax(boost: boolean): number {
+  return boost ? MAX_VOLUME + BOOST_SPAN : MAX_VOLUME;
+}
+
+export function volumeToSlider(volume: number): number {
+  return volume <= MAX_VOLUME ? volume : MAX_VOLUME + (volume - MAX_VOLUME) / BOOST_PER_STEP;
+}
+
+export function sliderToVolume(position: number): number {
+  return Math.round(
+    position <= MAX_VOLUME ? position : MAX_VOLUME + (position - MAX_VOLUME) * BOOST_PER_STEP,
+  );
 }
 
 /** Clamps any input (including NaN or fractional values) to a valid integer volume. */
@@ -60,6 +86,19 @@ export const LIMITER_RATIO = 20;
 export function limiterThreshold(volume: number): number {
   const boostDb = 20 * Math.log10(Math.max(volumeToGain(volume), 1));
   return -Math.min(-LIMITER_FLOOR_DB, boostDb);
+}
+
+/**
+ * Limiter release in seconds. Up to 200% a slow release keeps music natural; above it the release
+ * shortens to 50 ms so quiet syllables recover between loud ones (measured: a call voice at 400%
+ * gains about +10 dB instead of +9).
+ */
+export function limiterRelease(volume: number): number {
+  const slow = 0.15;
+  const fast = 0.05;
+  if (volume <= COMPRESSED_FROM) return slow;
+  const t = Math.min(1, (volume - COMPRESSED_FROM) / (MAX_BOOSTED_VOLUME - COMPRESSED_FROM));
+  return slow + (fast - slow) * t;
 }
 
 export function isBoosted(volume: number): boolean {

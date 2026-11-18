@@ -3,7 +3,7 @@
 export type Theme = 'system' | 'light' | 'dark';
 
 export interface Settings {
-  /** Allows volumes above 100%, up to 200%. Off by default. */
+  /** Allows volumes above 100%, up to 400%. Off by default. */
   boost: boolean;
   /** Shows the current tab volume on the toolbar icon. */
   badge: boolean;

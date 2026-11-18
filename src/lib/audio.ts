@@ -4,7 +4,7 @@
  * The limiter holds most peaks; the soft clipper rounds off what slips through (the compressor's
  * attack and makeup gain), so the output never reaches full scale and never clips harshly.
  */
-import { LIMITER_RATIO, limiterThreshold } from './volume.ts';
+import { LIMITER_RATIO, limiterRelease, limiterThreshold } from './volume.ts';
 
 /** The WaveShaper curve covers ±CLIP_RANGE; a gain of 1/CLIP_RANGE maps it onto [-1, 1]. */
 const CLIP_RANGE = 2;
@@ -55,6 +55,7 @@ export function createBoostStage(ctx: BaseAudioContext): BoostStage {
     output: clipper,
     setVolume(volume: number) {
       limiter.threshold.value = limiterThreshold(volume);
+      limiter.release.value = limiterRelease(volume);
     },
     disconnect() {
       for (const node of [limiter, scale, clipper]) node.disconnect();

@@ -5,20 +5,25 @@ import {
   clampVolume,
   isBoosted,
   LIMITER_FLOOR_DB,
+  limiterRelease,
   limiterThreshold,
   maxVolume,
   parseVolumeInput,
+  sliderMax,
+  sliderToVolume,
   stepVolume,
   volumeToGain,
+  volumeToSlider,
 } from '../../src/lib/volume.ts';
 
 describe('clampVolume', () => {
-  it('caps at 100% without the booster and 200% with it', () => {
+  it('caps at 100% without the booster and 400% with it', () => {
     assert.equal(clampVolume(150, false), 100);
     assert.equal(clampVolume(150, true), 150);
-    assert.equal(clampVolume(250, true), 200);
+    assert.equal(clampVolume(250, true), 250);
+    assert.equal(clampVolume(450, true), 400);
     assert.equal(maxVolume(false), 100);
-    assert.equal(maxVolume(true), 200);
+    assert.equal(maxVolume(true), 400);
   });
   it('never goes below zero and rounds fractions', () => {
     assert.equal(clampVolume(-5, true), 0);
@@ -74,13 +79,13 @@ describe('gain and badge', () => {
     assert.equal(volumeToGain(-1), 0);
   });
   it('gets louder with every step', () => {
-    for (let v = 1; v <= 200; v++) assert.ok(volumeToGain(v) > volumeToGain(v - 1), `at ${v}`);
+    for (let v = 1; v <= 400; v++) assert.ok(volumeToGain(v) > volumeToGain(v - 1), `at ${v}`);
   });
   it('limits more as the boost grows, down to the floor', () => {
     assert.equal(limiterThreshold(100), -0);
     assert.ok(limiterThreshold(101) > -0.2, 'barely limits a tiny boost');
     assert.equal(limiterThreshold(200), LIMITER_FLOOR_DB);
-    for (let v = 101; v <= 200; v++) {
+    for (let v = 101; v <= 400; v++) {
       assert.ok(limiterThreshold(v) <= limiterThreshold(v - 1), `at ${v}`);
       assert.ok(limiterThreshold(v) >= LIMITER_FLOOR_DB, `at ${v}`);
     }
@@ -93,5 +98,31 @@ describe('gain and badge', () => {
     assert.equal(badgeText(100), '');
     assert.equal(badgeText(0), '0');
     assert.equal(badgeText(150), '150');
+  });
+});
+
+describe('slider positions', () => {
+  it('keeps 0–100% at 1% per step and gives the boost range an equal half', () => {
+    assert.equal(sliderMax(false), 100);
+    assert.equal(sliderMax(true), 200);
+    assert.equal(sliderToVolume(50), 50);
+    assert.equal(sliderToVolume(100), 100);
+    assert.equal(sliderToVolume(101), 103);
+    assert.equal(sliderToVolume(200), 400);
+    assert.equal(volumeToSlider(400), 200);
+  });
+  it('round-trips every volume and only ever moves forward', () => {
+    for (let v = 0; v <= 400; v++) assert.equal(sliderToVolume(volumeToSlider(v)), v);
+    for (let p = 1; p <= 200; p++) assert.ok(sliderToVolume(p) > sliderToVolume(p - 1), `at ${p}`);
+  });
+});
+
+describe('limiter release', () => {
+  it('stays slow up to 200% and speeds up toward 400%', () => {
+    assert.equal(limiterRelease(150), 0.15);
+    assert.equal(limiterRelease(200), 0.15);
+    assert.ok(Math.abs(limiterRelease(400) - 0.05) < 1e-9);
+    for (let v = 201; v <= 400; v++)
+      assert.ok(limiterRelease(v) < limiterRelease(v - 1), `at ${v}`);
   });
 });

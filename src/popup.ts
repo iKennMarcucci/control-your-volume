@@ -21,15 +21,18 @@ import {
   windowNumbers,
 } from './lib/tabs.ts';
 import {
+  COMPRESSED_FROM,
   clampVolume,
   DEFAULT_VOLUME,
   isBoosted,
   LARGE_STEP,
   MAX_VOLUME,
-  maxVolume,
   parseVolumeInput,
   SMALL_STEP,
+  sliderMax,
+  sliderToVolume,
   stepVolume,
+  volumeToSlider,
 } from './lib/volume.ts';
 
 type Tab = chrome.tabs.Tab & { id: number };
@@ -101,6 +104,8 @@ interface Row {
   notice: HTMLElement;
   noticeText: HTMLElement;
   hint: HTMLElement;
+  /** Hint about media mode (no media, can't boost); it wins over the compression hint. */
+  mediaHint: string;
   /** Volume shown locally while the user interacts; storage updates must not fight it. */
   localVolume: number | null;
   dragging: boolean;
@@ -134,6 +139,7 @@ function createRow(tabId: number): Row {
     notice: q('.row-notice'),
     noticeText: q('.notice-text'),
     hint: q('.row-hint'),
+    mediaHint: '',
     localVolume: null,
     dragging: false,
     inflight: false,
@@ -167,7 +173,8 @@ function bindRow(row: Row): void {
   slider.addEventListener('pointercancel', endDrag);
   slider.addEventListener('change', endDrag);
 
-  slider.addEventListener('input', () => requestVolume(row, Number(slider.value)));
+  // The slider works in positions (see sliderToVolume): 1% per step up to 100%, 3% above.
+  slider.addEventListener('input', () => requestVolume(row, sliderToVolume(Number(slider.value))));
 
   slider.addEventListener('keydown', (event) => {
     const keys: Record<string, 1 | -1> = {
@@ -177,10 +184,13 @@ function bindRow(row: Row): void {
       ArrowLeft: -1,
     };
     const direction = keys[event.key];
-    if (direction && event.shiftKey) {
-      event.preventDefault();
-      requestVolume(row, stepVolume(currentVolume(row), direction, LARGE_STEP, settings.boost));
-    }
+    if (!direction) return;
+    event.preventDefault();
+    const current = currentVolume(row);
+    const next = event.shiftKey
+      ? stepVolume(current, direction, LARGE_STEP, settings.boost)
+      : sliderToVolume(Math.round(volumeToSlider(current)) + direction);
+    requestVolume(row, next === current ? current + direction : next);
   });
 
   // Double-click the slider to go back to 100%.
@@ -276,15 +286,22 @@ async function flush(row: Row): Promise<void> {
 }
 
 function paintVolume(row: Row, volume: number): void {
-  const max = maxVolume(settings.boost);
+  const max = sliderMax(settings.boost);
+  const position = volumeToSlider(volume);
   row.slider.max = String(max);
-  if (Number(row.slider.value) !== volume) row.slider.value = String(volume);
-  row.slider.style.setProperty('--fa', String(Math.min(volume, MAX_VOLUME) / max));
-  row.slider.style.setProperty('--fb', String(volume / max));
+  if (sliderToVolume(Number(row.slider.value)) !== volume) row.slider.value = String(position);
+  row.slider.style.setProperty('--fa', String(Math.min(position, MAX_VOLUME) / max));
+  row.slider.style.setProperty('--fb', String(position / max));
   row.slider.setAttribute('aria-valuetext', t('percentValue', volume));
   row.sliderWrap.dataset.boost = String(settings.boost);
   if (document.activeElement !== row.valueInput) row.valueInput.value = String(volume);
   row.el.dataset.boosted = String(isBoosted(volume));
+  const hintKey = row.mediaHint || (volume > COMPRESSED_FROM ? 'compressedBoost' : '');
+  if (row.hint.dataset.key !== hintKey) {
+    row.hint.dataset.key = hintKey;
+    row.hint.hidden = !hintKey;
+    row.hint.textContent = hintKey ? t(hintKey) : '';
+  }
 }
 
 function rowState(tab: Tab): RowState {
@@ -359,7 +376,7 @@ function updateRow(row: Row, tab: Tab, windowLabel: string | null): void {
   (row.el.querySelector('.allow-btn') as HTMLElement).hidden = state !== 'locked';
 
   const stored = tabStates[tab.id];
-  const hintKey =
+  row.mediaHint =
     state !== 'ready' || !stored?.media
       ? ''
       : stored.noMedia
@@ -367,8 +384,6 @@ function updateRow(row: Row, tab: Tab, windowLabel: string | null): void {
         : stored.limited
           ? 'boostLimited'
           : '';
-  row.hint.hidden = !hintKey;
-  if (hintKey) row.hint.textContent = t(hintKey);
 
   if (!row.dragging && !row.inflight && row.pending === null) {
     const stored = tabStates[tab.id]?.volume ?? DEFAULT_VOLUME;

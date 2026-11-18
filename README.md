@@ -6,7 +6,7 @@
 
 <p align="center">
   Per-tab volume control for Chromium browsers (Chrome, Edge, Brave, Opera, Arc, Vivaldi) on macOS and Windows,
-  with an optional booster up to 200%.
+  with an optional booster up to 400%.
 </p>
 
 <p align="center">
@@ -17,7 +17,7 @@
 ## Features
 
 - **Volume per tab** from 0% to 100%, independent of every other tab. Percentages follow how loud things sound, not the raw signal: 50% sounds half as loud (-10 dB) and 25% a quarter (-20 dB).
-- **Optional booster up to 200%**, about twice as loud (+10 dB). Turn it on in Settings. Above 100% the slider turns amber, and a limiter plus a soft clipper keep the sound from ever clipping. Audio that's already loud (most music) can only get a few dB louder without distorting; quiet videos and voices get the full boost.
+- **Optional booster up to 400%**. Turn it on in Settings. Quiet audio sounds twice as loud at 200% (+10 dB). Audio that's already close to full scale, like voices in a Google Meet call or most music, can't simply be multiplied: a limiter and a soft clipper squeeze its peaks so the rest can rise. Such audio gains about +7 dB at 200% and about +10 dB, twice as loud, at 400%. Above 200% the row warns that the sound is being compressed. The slider keeps 0–100% in its first half (1% per step) and 100–400% in the second (3% per step).
 - **Know which tab is which**: favicon, title, site, window number, pinned/muted/incognito tags and a live "playing" indicator.
 - **The tab you're on** is always pinned at the top. Tabs playing audio come next, then everything else. Search appears when you have many tabs.
 - **Keyboard first**: arrows step 1%, <kbd>Shift</kbd> + arrows step 10%, type an exact value, double-click the slider to reset to 100%.
@@ -91,7 +91,7 @@ Pushing a `v*` tag runs the release workflow: checks, build, zip and a GitHub Re
 
 ## Español
 
-**Control Your Volume!** te deja subir o bajar el volumen de cada pestaña por separado, con un amplificador opcional de hasta 200%. Está en español e inglés y sigue el idioma de tu navegador. Si activas **Controlar pestañas sin visitarlas** en Configuración, puedes ajustar cualquier pestaña sin abrir la extensión en ella (el navegador te pedirá acceso a los sitios; no se lee ni se envía nada). Para instalarla, descarga el `.zip` de [Releases](https://github.com/iKennMarcucci/control-your-volume/releases), descomprímelo y cárgalo con **Cargar descomprimida** en `chrome://extensions` con el **Modo de desarrollador** activado.
+**Control Your Volume!** te deja subir o bajar el volumen de cada pestaña por separado, con un amplificador opcional de hasta 400%. Está en español e inglés y sigue el idioma de tu navegador. Si activas **Controlar pestañas sin visitarlas** en Configuración, puedes ajustar cualquier pestaña sin abrir la extensión en ella (el navegador te pedirá acceso a los sitios; no se lee ni se envía nada). Para instalarla, descarga el `.zip` de [Releases](https://github.com/iKennMarcucci/control-your-volume/releases), descomprímelo y cárgalo con **Cargar descomprimida** en `chrome://extensions` con el **Modo de desarrollador** activado.
 
 ## License
 

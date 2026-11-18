@@ -255,19 +255,52 @@ test('50% sounds half as loud (-10 dB) and 200% twice as loud (+10 dB)', async (
   expect(boosted?.peak).toBeLessThan(1);
 });
 
-test('boosting audio that is already loud never clips and never gets quieter', async () => {
+test('boosting audio that is already loud never clips and keeps getting louder up to 400%', async () => {
   const a = await openTone(h, 'Loud tone', 440, 0.9);
   await markInvoked(h, [a.tabId]);
   await enableBoost(h);
   const popup = await openPopup(h, a.tabId);
   const source = 0.9 * SINE_RMS;
+  const hint = popup.locator(`${rowOf(a.tabId)} .row-hint`);
 
-  for (const volume of [101, 150, 200]) {
+  let previous = -Infinity;
+  for (const volume of [101, 150, 200, 300, 400]) {
     await setVolume(popup, a.tabId, volume);
     await expect.poll(async () => (await tabStates(h))[a.tabId]?.volume).toBe(volume);
     await popup.waitForTimeout(300);
     const [chain] = await stats(popup);
+    const level = db((chain?.rms ?? 0) / source);
     expect(chain?.peak, `peak at ${volume}%`).toBeLessThan(1);
-    expect(db((chain?.rms ?? 0) / source), `level at ${volume}%`).toBeGreaterThan(-0.3);
+    expect(level, `level at ${volume}%`).toBeGreaterThan(-0.3);
+    expect(level, `level at ${volume}% vs. the step before`).toBeGreaterThan(previous - 0.1);
+    previous = level;
+    // Above 200% the row says the sound is being compressed.
+    if (volume > 200) await expect(hint).toHaveText(await msg(popup, 'compressedBoost'));
+    else await expect(hint).toBeHidden();
   }
+});
+
+test('the booster goes up to 400% and the slider keeps 0–100% precise', async () => {
+  const a = await openTone(h, 'Tone A');
+  await markInvoked(h, [a.tabId]);
+  await enableBoost(h);
+  const popup = await openPopup(h, a.tabId);
+  const row = popup.locator(rowOf(a.tabId));
+  const input = row.locator('.value-input');
+  const slider = row.locator('.slider');
+
+  await input.fill('450');
+  await input.press('Enter');
+  await expect(input).toHaveValue('400');
+  await expect.poll(async () => (await tabStates(h))[a.tabId]?.volume).toBe(400);
+  await expect(slider).toHaveValue('200');
+
+  // Arrow keys: 1% per step below 100%, 3% per step above.
+  await setVolume(popup, a.tabId, 100);
+  await slider.focus();
+  await slider.press('ArrowRight');
+  await expect(input).toHaveValue('103');
+  await slider.press('ArrowLeft');
+  await slider.press('ArrowLeft');
+  await expect(input).toHaveValue('99');
 });

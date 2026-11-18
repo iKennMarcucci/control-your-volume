@@ -5,6 +5,16 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+## [1.0.0-beta.3] - 2026-11-18
+
+### Added
+
+- The booster goes up to 400%. Voices in calls (Google Meet) and music are already close to full scale, so they got only about +7 dB at 200%. At 400% they get about +10 dB, twice as loud, with stronger compression and no clipping. Above 200% the row says the sound is being compressed.
+
+### Changed
+
+- The slider keeps 0–100% in its first half (1% per step) and uses the second half for 100–400% (3% per step). Arrow keys follow the same steps, and typing a value still sets it exactly.
+
 ## [1.0.0-beta.2] - 2026-11-17
 
 ### Changed
@@ -55,7 +65,8 @@ First public alpha.
 - English and Spanish.
 - Capture is released automatically when a tab goes back to 100%.
 
-[Unreleased]: https://github.com/iKennMarcucci/control-your-volume/compare/v1.0.0-beta.2...HEAD
+[Unreleased]: https://github.com/iKennMarcucci/control-your-volume/compare/v1.0.0-beta.3...HEAD
+[1.0.0-beta.3]: https://github.com/iKennMarcucci/control-your-volume/compare/v1.0.0-beta.2...v1.0.0-beta.3
 [1.0.0-beta.2]: https://github.com/iKennMarcucci/control-your-volume/compare/v1.0.0-beta.1...v1.0.0-beta.2
 [1.0.0-beta.1]: https://github.com/iKennMarcucci/control-your-volume/compare/v1.0.0-alpha.2...v1.0.0-beta.1
 [1.0.0-alpha.2]: https://github.com/iKennMarcucci/control-your-volume/compare/v1.0.0-alpha.1...v1.0.0-alpha.2

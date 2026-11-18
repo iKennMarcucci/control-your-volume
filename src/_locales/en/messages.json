@@ -3,7 +3,7 @@
     "message": "Control Your Volume!"
   },
   "extDescription": {
-    "message": "Set the volume of each tab separately, with an optional boost up to 200%."
+    "message": "Set the volume of each tab separately, with an optional boost up to 400%."
   },
   "cmdOpen": {
     "message": "Open Control Your Volume!"
@@ -86,6 +86,9 @@
   "boostLimited": {
     "message": "This site can’t go above 100% from here. Open the extension on this tab to boost it."
   },
+  "compressedBoost": {
+    "message": "Above 200% the sound is compressed so it doesn’t distort. It may sound flatter."
+  },
   "noMedia": {
     "message": "No video or audio found on this page. If nothing changes, open the extension on this tab."
   },
@@ -119,7 +122,7 @@
     "message": "Volume booster"
   },
   "settingsBoostHint": {
-    "message": "Lets you go up to 200%, about twice as loud. Audio that’s already loud can only get a little louder without distorting. High levels can harm your hearing or speakers."
+    "message": "Lets you go up to 400%. Quiet audio sounds twice as loud at 200%; voices in calls and music, which are already loud, need up to 400% and get compressed to avoid distortion. High levels can harm your hearing or speakers."
   },
   "settingsBadge": {
     "message": "Show volume on icon"
