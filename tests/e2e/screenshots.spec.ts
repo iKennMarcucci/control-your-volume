@@ -122,7 +122,7 @@ test('free control: locked rows, hints and settings', async () => {
 
 for (const scheme of ['light', 'dark'] as const) {
   test(`booster up to 400% (${scheme})`, async () => {
-    const h = await launch({ colorScheme: scheme });
+    const h = await launch({ colorScheme: scheme, deviceScaleFactor: 2 });
     const meet = await openTone(h, 'Reunión semanal — Google Meet');
     const music = await openTone(h, 'Lo-fi beats to relax/study to', 330);
     const video = await openTone(h, 'Tutorial con audio bajo', 550);
