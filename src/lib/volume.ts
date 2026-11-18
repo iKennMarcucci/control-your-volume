@@ -29,6 +29,39 @@ export function volumeToSlider(volume: number): number {
   return volume <= MAX_VOLUME ? volume : MAX_VOLUME + (volume - MAX_VOLUME) / BOOST_PER_STEP;
 }
 
+/** Guide lines on the slider; dragging near one snaps to it. */
+export const SNAP_MARKS = [0, 50, 100, 200, 300, 400] as const;
+
+export function snapMarks(boost: boolean): number[] {
+  return SNAP_MARKS.filter((mark) => mark <= maxVolume(boost));
+}
+
+/**
+ * Snaps a slider position to the closest guide mark when it's within `threshold` positions.
+ * Returns the position unchanged otherwise.
+ */
+export function snapPosition(position: number, boost: boolean, threshold: number): number {
+  let best = position;
+  let distance = threshold;
+  for (const mark of snapMarks(boost)) {
+    const markPosition = volumeToSlider(mark);
+    const d = Math.abs(position - markPosition);
+    if (d <= distance) {
+      best = markPosition;
+      distance = d;
+    }
+  }
+  return best;
+}
+
+/** Fine step for arrow keys and the mouse wheel: 1% up to 100%, 5% above (lands on 200/300/400). */
+export const BOOST_STEP = 5;
+
+export function fineStep(volume: number, direction: 1 | -1, boost: boolean): number {
+  const above = volume > MAX_VOLUME || (volume === MAX_VOLUME && direction === 1);
+  return stepVolume(volume, direction, above ? BOOST_STEP : SMALL_STEP, boost);
+}
+
 export function sliderToVolume(position: number): number {
   return Math.round(
     position <= MAX_VOLUME ? position : MAX_VOLUME + (position - MAX_VOLUME) * BOOST_PER_STEP,

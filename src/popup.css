@@ -525,21 +525,39 @@ svg {
   height: 28px;
 }
 
-/* Tick that marks 100% while the booster is enabled. */
-.slider-wrap[data-boost="true"]::after {
-  content: "";
+/* Guide marks (50%, 100%, 200%…). The slider sits above them, so the thumb covers a mark. */
+.ticks {
   position: absolute;
-  left: calc(7px + (100% - 14px) * 0.5);
-  top: 50%;
-  width: 2px;
-  height: 10px;
-  margin: -5px 0 0 -1px;
-  border-radius: 1px;
-  background: var(--gray-600);
+  inset: 0;
   pointer-events: none;
 }
 
+.tick {
+  position: absolute;
+  left: calc(7px + (100% - 14px) * var(--at));
+  top: 50%;
+  width: 2px;
+  height: 12px;
+  margin: -6px 0 0 -1px;
+  border-radius: 1px;
+  background: var(--gray-500);
+  transition: background-color 0.15s;
+}
+
+/* 100% is the reference level: a little taller. */
+.tick[data-mark="100"] {
+  height: 16px;
+  margin-top: -8px;
+  background: var(--gray-600);
+}
+
+.tick[data-active="true"] {
+  background: var(--gray-1000);
+}
+
 .slider {
+  position: relative;
+  z-index: 1;
   --fa: 1;
   --fb: 1;
   --a: calc(7px + (100% - 14px) * var(--fa));

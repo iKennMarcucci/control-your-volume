@@ -3,6 +3,7 @@ import { describe, it } from 'node:test';
 import {
   badgeText,
   clampVolume,
+  fineStep,
   isBoosted,
   LIMITER_FLOOR_DB,
   limiterRelease,
@@ -11,6 +12,8 @@ import {
   parseVolumeInput,
   sliderMax,
   sliderToVolume,
+  snapMarks,
+  snapPosition,
   stepVolume,
   volumeToGain,
   volumeToSlider,
@@ -124,5 +127,34 @@ describe('limiter release', () => {
     assert.ok(Math.abs(limiterRelease(400) - 0.05) < 1e-9);
     for (let v = 201; v <= 400; v++)
       assert.ok(limiterRelease(v) < limiterRelease(v - 1), `at ${v}`);
+  });
+});
+
+describe('guide marks and snapping', () => {
+  it('offers 0/50/100 without the booster and up to 400 with it', () => {
+    assert.deepEqual(snapMarks(false), [0, 50, 100]);
+    assert.deepEqual(snapMarks(true), [0, 50, 100, 200, 300, 400]);
+  });
+  it('snaps only within the threshold, to the closest mark', () => {
+    assert.equal(snapPosition(48, false, 3), 50);
+    assert.equal(snapPosition(46, false, 3), 46);
+    assert.equal(snapPosition(98.5, true, 3), 100);
+    // 200% sits at position 133.33 with the booster on.
+    assert.equal(sliderToVolume(snapPosition(131, true, 3)), 200);
+    assert.equal(sliderToVolume(snapPosition(120, true, 3)), 160);
+    assert.equal(snapPosition(1, true, 3), 0);
+  });
+});
+
+describe('fine steps (arrows and wheel)', () => {
+  it('moves 1% up to 100% and 5% above, landing on 200/300/400', () => {
+    assert.equal(fineStep(50, 1, true), 51);
+    assert.equal(fineStep(100, 1, true), 105);
+    assert.equal(fineStep(100, -1, true), 99);
+    assert.equal(fineStep(103, 1, true), 105);
+    assert.equal(fineStep(103, -1, true), 100);
+    assert.equal(fineStep(195, 1, true), 200);
+    assert.equal(fineStep(400, 1, true), 400);
+    assert.equal(fineStep(100, 1, false), 100);
   });
 });

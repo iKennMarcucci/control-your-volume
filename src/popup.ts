@@ -24,6 +24,7 @@ import {
   COMPRESSED_FROM,
   clampVolume,
   DEFAULT_VOLUME,
+  fineStep,
   isBoosted,
   LARGE_STEP,
   MAX_VOLUME,
@@ -31,6 +32,8 @@ import {
   SMALL_STEP,
   sliderMax,
   sliderToVolume,
+  snapMarks,
+  snapPosition,
   stepVolume,
   volumeToSlider,
 } from './lib/volume.ts';
@@ -106,6 +109,12 @@ interface Row {
   hint: HTMLElement;
   /** Hint about media mode (no media, can't boost); it wins over the compression hint. */
   mediaHint: string;
+  ticks: HTMLElement;
+  /** Which set of guide marks is drawn (they change with the booster). */
+  ticksKey: string;
+  /** Wheel movement not yet turned into a step (trackpads send many small deltas). */
+  wheelAcc: number;
+  wheelAt: number;
   /** Volume shown locally while the user interacts; storage updates must not fight it. */
   localVolume: number | null;
   dragging: boolean;
@@ -140,6 +149,10 @@ function createRow(tabId: number): Row {
     noticeText: q('.notice-text'),
     hint: q('.row-hint'),
     mediaHint: '',
+    ticks: q('.ticks'),
+    ticksKey: '',
+    wheelAcc: 0,
+    wheelAt: 0,
     localVolume: null,
     dragging: false,
     inflight: false,
@@ -173,24 +186,31 @@ function bindRow(row: Row): void {
   slider.addEventListener('pointercancel', endDrag);
   slider.addEventListener('change', endDrag);
 
-  // The slider works in positions (see sliderToVolume): 1% per step up to 100%, 3% above.
-  slider.addEventListener('input', () => requestVolume(row, sliderToVolume(Number(slider.value))));
+  // The slider works in positions (see sliderToVolume). Near a guide mark it snaps onto it.
+  slider.addEventListener('input', () => {
+    const max = sliderMax(settings.boost);
+    const track = Math.max(1, slider.clientWidth - THUMB_PX);
+    const raw = Number(slider.value);
+    const position = snapPosition(raw, settings.boost, (SNAP_PX * max) / track);
+    if (position !== raw) slider.value = String(position);
+    requestVolume(row, sliderToVolume(position));
+  });
 
   slider.addEventListener('keydown', (event) => {
-    const keys: Record<string, 1 | -1> = {
-      ArrowUp: 1,
-      ArrowRight: 1,
-      ArrowDown: -1,
-      ArrowLeft: -1,
-    };
-    const direction = keys[event.key];
+    const direction = ARROWS[event.key];
     if (!direction) return;
     event.preventDefault();
-    const current = currentVolume(row);
-    const next = event.shiftKey
-      ? stepVolume(current, direction, LARGE_STEP, settings.boost)
-      : sliderToVolume(Math.round(volumeToSlider(current)) + direction);
-    requestVolume(row, next === current ? current + direction : next);
+    nudge(row, direction, event.shiftKey);
+  });
+
+  // Mouse wheel or trackpad over the slider.
+  row.sliderWrap.addEventListener('wheel', (event) => onWheel(row, event), { passive: false });
+  // Arrow keys also work while the pointer is over the slider, without clicking it first.
+  row.sliderWrap.addEventListener('pointerenter', () => {
+    hoveredRow = row;
+  });
+  row.sliderWrap.addEventListener('pointerleave', () => {
+    if (hoveredRow === row) hoveredRow = null;
   });
 
   // Double-click the slider to go back to 100%.
@@ -231,6 +251,55 @@ function bindRow(row: Row): void {
   };
   row.title.addEventListener('click', goToTab);
   row.el.querySelector('.allow-btn')?.addEventListener('click', () => void requestSiteAccess());
+}
+
+const ARROWS: Record<string, 1 | -1> = { ArrowUp: 1, ArrowRight: 1, ArrowDown: -1, ArrowLeft: -1 };
+/** Width of the slider thumb; the track's usable length is the slider width minus this. */
+const THUMB_PX = 14;
+/** Distance from a guide mark, in pixels, at which dragging snaps onto it. */
+const SNAP_PX = 6;
+/** Pixels of trackpad scrolling per step. A mouse wheel notch is always one step. */
+const WHEEL_STEP_PX = 50;
+/** Right after the list scrolled, the wheel keeps scrolling it instead of changing a volume. */
+const SCROLL_LATCH_MS = 400;
+
+let hoveredRow: Row | null = null;
+let lastListScroll = Number.NEGATIVE_INFINITY;
+
+/** One arrow/wheel step: 1% up to 100%, 5% above; Shift steps 10%. */
+function nudge(row: Row, direction: 1 | -1, large: boolean): void {
+  const current = currentVolume(row);
+  const next = large
+    ? stepVolume(current, direction, LARGE_STEP, settings.boost)
+    : fineStep(current, direction, settings.boost);
+  if (next !== current) requestVolume(row, next);
+}
+
+function onWheel(row: Row, event: WheelEvent): void {
+  if (row.el.dataset.state !== 'ready') return;
+  if (performance.now() - lastListScroll < SCROLL_LATCH_MS) return;
+  // Up or right is louder. Shift+wheel arrives as horizontal scrolling and steps 10%.
+  const delta = event.shiftKey
+    ? -(event.deltaY || event.deltaX)
+    : Math.abs(event.deltaX) > Math.abs(event.deltaY)
+      ? event.deltaX
+      : -event.deltaY;
+  if (!delta) return;
+  event.preventDefault();
+  const direction: 1 | -1 = delta > 0 ? 1 : -1;
+  const now = performance.now();
+  if (now - row.wheelAt > 300 || Math.sign(row.wheelAcc) === -direction) row.wheelAcc = 0;
+  row.wheelAt = now;
+  if (event.deltaMode !== WheelEvent.DOM_DELTA_PIXEL || Math.abs(delta) >= WHEEL_STEP_PX) {
+    row.wheelAcc = 0;
+    nudge(row, direction, event.shiftKey);
+    return;
+  }
+  row.wheelAcc += delta;
+  if (Math.abs(row.wheelAcc) >= WHEEL_STEP_PX) {
+    row.wheelAcc -= direction * WHEEL_STEP_PX;
+    nudge(row, direction, event.shiftKey);
+  }
 }
 
 function currentVolume(row: Row): number {
@@ -292,6 +361,7 @@ function paintVolume(row: Row, volume: number): void {
   if (sliderToVolume(Number(row.slider.value)) !== volume) row.slider.value = String(position);
   row.slider.style.setProperty('--fa', String(Math.min(position, MAX_VOLUME) / max));
   row.slider.style.setProperty('--fb', String(position / max));
+  paintTicks(row, volume, max);
   row.slider.setAttribute('aria-valuetext', t('percentValue', volume));
   row.sliderWrap.dataset.boost = String(settings.boost);
   if (document.activeElement !== row.valueInput) row.valueInput.value = String(volume);
@@ -301,6 +371,27 @@ function paintVolume(row: Row, volume: number): void {
     row.hint.dataset.key = hintKey;
     row.hint.hidden = !hintKey;
     row.hint.textContent = hintKey ? t(hintKey) : '';
+  }
+}
+
+/** Guide marks (50%, 100%, 200%…) between the ends of the slider; the current one is highlighted. */
+function paintTicks(row: Row, volume: number, max: number): void {
+  const marks = snapMarks(settings.boost).filter((mark) => mark > 0 && volumeToSlider(mark) < max);
+  const key = marks.join(',');
+  if (row.ticksKey !== key) {
+    row.ticksKey = key;
+    row.ticks.replaceChildren(
+      ...marks.map((mark) => {
+        const tick = document.createElement('i');
+        tick.className = 'tick';
+        tick.dataset.mark = String(mark);
+        tick.style.setProperty('--at', String(volumeToSlider(mark) / max));
+        return tick;
+      }),
+    );
+  }
+  for (const tick of row.ticks.children as HTMLCollectionOf<HTMLElement>) {
+    tick.dataset.active = String(Number(tick.dataset.mark) === volume);
   }
 }
 
@@ -708,7 +799,27 @@ async function main(): Promise<void> {
     query = (event.target as HTMLInputElement).value;
     render();
   });
+  $('view-tabs').addEventListener(
+    'scroll',
+    () => {
+      lastListScroll = performance.now();
+    },
+    { passive: true },
+  );
   document.addEventListener('keydown', (event) => {
+    // Arrow keys with the pointer over a slider, unless the user is typing or on another slider.
+    const direction = ARROWS[event.key];
+    const target = event.target as HTMLElement;
+    if (
+      direction &&
+      hoveredRow?.el.isConnected &&
+      hoveredRow.el.dataset.state === 'ready' &&
+      !target.closest('input, textarea, select, [contenteditable]')
+    ) {
+      event.preventDefault();
+      nudge(hoveredRow, direction, event.shiftKey);
+      return;
+    }
     if (event.key === 'Escape' && $('app').dataset.view === 'settings') {
       event.preventDefault();
       showView('tabs');

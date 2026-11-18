@@ -19,7 +19,10 @@ Open YouTube (or any video), Spotify Web or SoundCloud, and a third site with au
 - [ ] The browser shows the tab as being shared. That's expected.
 - [ ] Type `55` in the value box and press Enter. The volume changes and the box shows `55`.
 - [ ] Double-click the slider. It goes back to 100%, and after about a second the "shared" indicator disappears.
-- [ ] Arrows move 1%, Shift+arrows move 10%, and Tab moves focus in a logical order.
+- [ ] Arrows move 1% (5% above 100%), Shift+arrows move 10%, and Tab moves focus in a logical order.
+- [ ] Dragging near 50%, 100%, 200% or 300% snaps onto the mark; away from the marks, dragging is free.
+- [ ] With the pointer over a slider, the mouse wheel and trackpad change the volume (one notch, one step), and arrow keys work without clicking it.
+- [ ] Scrolling a long list with the wheel doesn't change the volume of the rows the pointer crosses.
 
 ## Several tabs
 
