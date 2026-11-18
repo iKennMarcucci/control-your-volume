@@ -142,7 +142,8 @@
             <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2.5 6h2.2L8 3.2v9.6L4.7 10H2.5z" fill="currentColor" /><path class="wave" d="M10.4 5.6a3.4 3.4 0 0 1 0 4.8M12.3 3.8a6 6 0 0 1 0 8.4" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" /><path class="cross" d="m10.5 6 4 4m0-4-4 4" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" /></svg>
           </button>
           <div class="slider-wrap">
-            <input class="slider" type="range" min="0" max="100" step="1" value="100" />
+            <span class="ticks" aria-hidden="true"></span>
+            <input class="slider" type="range" min="0" max="100" step="any" value="100" />
           </div>
           <label class="value">
             <input class="value-input" type="text" inputmode="numeric" maxlength="4" autocomplete="off" spellcheck="false" />

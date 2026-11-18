@@ -74,6 +74,8 @@ export interface LaunchOptions {
   captureEverywhere?: boolean;
   /** Grants the optional "control tabs without visiting them" site access. */
   siteAccess?: boolean;
+  /** Pixel density for screenshots (2 = Retina). */
+  deviceScaleFactor?: number;
 }
 
 export async function launch(options: LaunchOptions = {}): Promise<Harness> {
@@ -118,6 +120,7 @@ export async function launch(options: LaunchOptions = {}): Promise<Harness> {
     ignoreDefaultArgs: ['--mute-audio'],
     locale: options.locale ?? 'en-US',
     colorScheme: options.colorScheme ?? 'light',
+    ...(options.deviceScaleFactor ? { deviceScaleFactor: options.deviceScaleFactor } : {}),
     args: [
       `--disable-extensions-except=${dir}`,
       `--load-extension=${dir}`,

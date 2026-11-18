@@ -19,7 +19,10 @@ Open YouTube (or any video), Spotify Web or SoundCloud, and a third site with au
 - [ ] The browser shows the tab as being shared. That's expected.
 - [ ] Type `55` in the value box and press Enter. The volume changes and the box shows `55`.
 - [ ] Double-click the slider. It goes back to 100%, and after about a second the "shared" indicator disappears.
-- [ ] Arrows move 1%, Shift+arrows move 10%, and Tab moves focus in a logical order.
+- [ ] Arrows move 1% (5% above 100%), Shift+arrows move 10%, and Tab moves focus in a logical order.
+- [ ] Dragging near 50%, 100%, 200% or 300% snaps onto the mark; away from the marks, dragging is free.
+- [ ] With the pointer over a slider, the mouse wheel and trackpad change the volume (one notch, one step), and arrow keys work without clicking it.
+- [ ] Scrolling a long list with the wheel doesn't change the volume of the rows the pointer crosses.
 
 ## Several tabs
 
@@ -47,9 +50,10 @@ Open YouTube (or any video), Spotify Web or SoundCloud, and a third site with au
 ## Booster
 
 - [ ] By default the slider stops at 100% and typing `150` gives 100.
-- [ ] Turn on **Volume booster** in Settings. The slider goes to 200% and shows a tick at 100%.
-- [ ] At 150–200% the audio is louder and the slider and value turn amber. On a quiet video or a voice, 200% sounds about twice as loud.
-- [ ] Loud music at 200% is a bit louder and never crackles or distorts.
+- [ ] Turn on **Volume booster** in Settings. The slider goes to 400%, with 100% marked in the middle.
+- [ ] At 150–200% the audio is louder and the slider and value turn amber. On a quiet video, 200% sounds about twice as loud.
+- [ ] In a Google Meet call on laptop speakers, 400% sounds about twice as loud as 100%, without crackling. Above 200% the row says the sound is compressed.
+- [ ] Loud music at 200–400% is louder and never crackles or distorts.
 - [ ] 50% sounds clearly half as loud as 100%, and 25% about a quarter.
 - [ ] Turn the booster off. Every boosted tab drops back to 100%.
 

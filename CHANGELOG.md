@@ -5,6 +5,20 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+## [1.0.0-beta.3] - 2026-11-18
+
+### Added
+
+- The booster goes up to 400%. Voices in calls (Google Meet) and music are already close to full scale, so they got only about +7 dB at 200%. At 400% they get about +10 dB, twice as loud, with stronger compression and no clipping. Above 200% the row says the sound is being compressed.
+
+- Guide marks on the slider at 50%, 100%, 200% and 300%. Dragging near one snaps onto it, and the mark under the current value is highlighted.
+- The mouse wheel or trackpad changes the volume while the pointer is over a slider: one wheel notch is one step. Right after you scroll the list, the wheel keeps scrolling it, so crossing a slider doesn't change its volume.
+- Arrow keys change the volume while the pointer is over a slider, without clicking it first.
+
+### Changed
+
+- The slider keeps 0–100% in its first half and uses the second half for 100–400%. Arrow keys and the wheel step 1% up to 100% and 5% above, landing on 200%, 300% and 400%. Typing a value still sets it exactly.
+
 ## [1.0.0-beta.2] - 2026-11-17
 
 ### Changed
@@ -55,7 +69,8 @@ First public alpha.
 - English and Spanish.
 - Capture is released automatically when a tab goes back to 100%.
 
-[Unreleased]: https://github.com/iKennMarcucci/control-your-volume/compare/v1.0.0-beta.2...HEAD
+[Unreleased]: https://github.com/iKennMarcucci/control-your-volume/compare/v1.0.0-beta.3...HEAD
+[1.0.0-beta.3]: https://github.com/iKennMarcucci/control-your-volume/compare/v1.0.0-beta.2...v1.0.0-beta.3
 [1.0.0-beta.2]: https://github.com/iKennMarcucci/control-your-volume/compare/v1.0.0-beta.1...v1.0.0-beta.2
 [1.0.0-beta.1]: https://github.com/iKennMarcucci/control-your-volume/compare/v1.0.0-alpha.2...v1.0.0-beta.1
 [1.0.0-alpha.2]: https://github.com/iKennMarcucci/control-your-volume/compare/v1.0.0-alpha.1...v1.0.0-alpha.2

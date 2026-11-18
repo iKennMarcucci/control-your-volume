@@ -119,3 +119,24 @@ test('free control: locked rows, hints and settings', async () => {
   await shoot(popup, 'free-settings');
   await h.close();
 });
+
+for (const scheme of ['light', 'dark'] as const) {
+  test(`booster up to 400% (${scheme})`, async () => {
+    const h = await launch({ colorScheme: scheme, deviceScaleFactor: 2 });
+    const meet = await openTone(h, 'Reunión semanal — Google Meet');
+    const music = await openTone(h, 'Lo-fi beats to relax/study to', 330);
+    const video = await openTone(h, 'Tutorial con audio bajo', 550);
+    await markInvoked(h, [meet.tabId, music.tabId, video.tabId]);
+    await h.worker.evaluate(() =>
+      chrome.storage.sync.set({ settings: { boost: true, badge: true, theme: 'system' } }),
+    );
+    let popup = await openPopup(h, meet.tabId);
+    await setVolume(popup, meet.tabId, 400);
+    await setVolume(popup, music.tabId, 60);
+    await setVolume(popup, video.tabId, 160);
+    await popup.close();
+    popup = await openPopup(h, meet.tabId);
+    await shoot(popup, `boost-400-${scheme}`);
+    await h.close();
+  });
+}
