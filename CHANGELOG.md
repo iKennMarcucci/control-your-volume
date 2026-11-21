@@ -5,6 +5,24 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-11-21
+
+First stable release. Same code as 1.0.0-beta.3, which passed the manual testing checklist on macOS and Windows and the automated tests in Chromium and Brave.
+
+### Highlights
+
+- **Volume per tab** from 0% to 100%. The percentage follows how loud it sounds: 50% is half as loud and 25% a quarter.
+- **Optional booster up to 400%**, with a limiter and soft clipper so it never crackles. Quiet audio sounds twice as loud at 200%. Call voices and music, which are already loud, need up to 400% for the same effect.
+- **Control tabs without visiting them** (optional). With site access, tabs you never opened the extension on are adjusted through their video and audio, without the "shared" indicator.
+- **Mute** per tab that also silences captured audio.
+- **Know which tab is which**: favicon, title, site, window number, and pinned, muted and incognito tags, with a live "playing" indicator. Search appears when there are many tabs.
+- **Precise slider**: 0–100% fills the first half and the boost the second. Guide marks at 50%, 100%, 200% and 300% snap the slider while you drag. The mouse wheel, trackpad and arrow keys work with the pointer over the slider. You can also type an exact value.
+- **Global shortcuts** to raise, lower or mute the current tab and to open the popup. A badge on the toolbar icon shows the current tab's volume.
+- **Fast and private**: the popup opens in milliseconds with dozens of tabs, makes no network requests and has no analytics.
+- English and Spanish, with light, dark and system themes, built on Vercel's Geist design language.
+
+See the pre-release entries below for the full history.
+
 ## [1.0.0-beta.3] - 2026-11-18
 
 ### Added
@@ -69,7 +87,8 @@ First public alpha.
 - English and Spanish.
 - Capture is released automatically when a tab goes back to 100%.
 
-[Unreleased]: https://github.com/iKennMarcucci/control-your-volume/compare/v1.0.0-beta.3...HEAD
+[Unreleased]: https://github.com/iKennMarcucci/control-your-volume/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/iKennMarcucci/control-your-volume/compare/v1.0.0-beta.3...v1.0.0
 [1.0.0-beta.3]: https://github.com/iKennMarcucci/control-your-volume/compare/v1.0.0-beta.2...v1.0.0-beta.3
 [1.0.0-beta.2]: https://github.com/iKennMarcucci/control-your-volume/compare/v1.0.0-beta.1...v1.0.0-beta.2
 [1.0.0-beta.1]: https://github.com/iKennMarcucci/control-your-volume/compare/v1.0.0-alpha.2...v1.0.0-beta.1

@@ -79,16 +79,21 @@ Biome's "heading/label/anchor has no content" checks are off for `popup.html` be
 
 ## Releases
 
-Versions follow semver with pre-releases: `1.0.0-alpha.N` → `1.0.0-beta.N` → `1.0.0-rc.N` → `1.0.0`. Chromium only accepts numeric versions, so the build writes the semver to `version_name` and a sortable number to `version` (`1.0.0-beta.2` → `0.9.2.2`).
+Versions follow semver: `1.0.1` for fixes, `1.1.0` for new features, with optional pre-releases (`1.1.0-beta.1`, `1.1.0-rc.1`) before them. Chromium only accepts numeric versions, so the build writes the semver to `version_name` and a sortable number to `version` (`1.0.0-beta.2` → `0.9.2.2`, `1.1.0-beta.1` → `1.0.9999.2001`, `1.1.0` → `1.1.0`).
+
+`main` is protected, so a release goes through a pull request:
 
 ```bash
-node scripts/version.mjs 1.0.0-beta.1   # bumps package.json
-# update CHANGELOG.md, then:
-git commit -am "chore: release v1.0.0-beta.1"
-git tag v1.0.0-beta.1 && git push --follow-tags
+git checkout -b release/v1.0.1
+node scripts/version.mjs 1.0.1          # bumps package.json
+# move the Unreleased notes in CHANGELOG.md under the new version, then:
+git commit -am "chore: release v1.0.1" && git push -u origin release/v1.0.1
+gh pr create --fill                     # wait for CI, then merge
+git checkout main && git pull
+git tag -a v1.0.1 -m v1.0.1 && git push origin v1.0.1
 ```
 
-Pushing a `v*` tag runs the release workflow: checks, build, zip and a GitHub Release (marked pre-release when the version has `-alpha`, `-beta` or `-rc`).
+Pushing a `v*` tag runs the release workflow: checks, build, zip and a GitHub Release whose notes come from that version's CHANGELOG section. Versions with `-alpha`, `-beta` or `-rc` are marked as pre-releases; the others become the latest release.
 
 ## Español
 
